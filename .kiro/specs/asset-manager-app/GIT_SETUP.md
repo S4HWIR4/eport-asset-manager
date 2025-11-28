@@ -45,20 +45,25 @@ Your initial commit has been made successfully:
    - Keep it public or private as you prefer
    - **DO NOT** initialize with README, .gitignore, or license (we already have these)
 
-2. **Add the remote:**
+2. **✅ Remote Added:**
    ```bash
-   git remote add origin https://github.com/S4HW1R4/asset-manager.git
+   git remote add origin https://github.com/S4HWIR4/eport-asset-manager.git
    ```
-   *(Replace with your actual repository URL)*
 
-3. **Push your code:**
+3. **✅ Code Pushed Successfully!**
    ```bash
    git branch -M main
    git push -u origin main
    ```
+   - **Status**: Successfully pushed to GitHub
+   - **Branch**: main
+   - **Commits**: 2 commits pushed
+   - **Repository**: https://github.com/S4HWIR4/eport-asset-manager
 
 4. **For subsequent pushes:**
    ```bash
+   git add .
+   git commit -m "Your commit message"
    git push
    ```
 
