@@ -41,7 +41,7 @@ async function AdminStats() {
           <CardDescription>Total Users</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-900 dark:text-white">{stats.totalUsers}</p>
+          <p className="text-3xl font-semibold text-gray-900 dark:text-white truncate">{stats.totalUsers}</p>
         </CardContent>
       </Card>
       <Card>
@@ -49,7 +49,7 @@ async function AdminStats() {
           <CardDescription>Total Assets</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-900 dark:text-white">{stats.totalAssets}</p>
+          <p className="text-3xl font-semibold text-gray-900 dark:text-white truncate">{stats.totalAssets}</p>
         </CardContent>
       </Card>
       <Card>
@@ -57,7 +57,7 @@ async function AdminStats() {
           <CardDescription>Categories</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-900 dark:text-white">{stats.totalCategories}</p>
+          <p className="text-3xl font-semibold text-gray-900 dark:text-white truncate">{stats.totalCategories}</p>
         </CardContent>
       </Card>
       <Card>
@@ -65,7 +65,7 @@ async function AdminStats() {
           <CardDescription>Departments</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-900 dark:text-white">{stats.totalDepartments}</p>
+          <p className="text-3xl font-semibold text-gray-900 dark:text-white truncate">{stats.totalDepartments}</p>
         </CardContent>
       </Card>
     </div>

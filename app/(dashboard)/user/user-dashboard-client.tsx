@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreateAssetDialog } from './create-asset-dialog';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatCurrencyCompact, formatDate } from '@/lib/utils';
 import { getMyDeletionRequests } from '@/app/actions/deletion-requests';
 import type { Asset } from '@/types/database';
 
@@ -95,7 +95,9 @@ export function UserDashboardClient({
               <CardDescription>Combined value of all assets</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
+              <p className="text-2xl font-bold truncate" title={formatCurrency(totalValue)}>
+                {formatCurrencyCompact(totalValue)}
+              </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total cost</p>
             </CardContent>
           </Card>
@@ -144,15 +146,17 @@ export function UserDashboardClient({
                   {Object.entries(byCategory)
                     .sort(([, a], [, b]) => b.value - a.value)
                     .map(([category, stats]) => (
-                      <div key={category} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{category}</p>
+                      <div key={category} className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{category}</p>
                           <p className="text-xs text-muted-foreground">
                             {stats.count} {stats.count === 1 ? 'asset' : 'assets'}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{formatCurrency(stats.value)}</p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-semibold" title={formatCurrency(stats.value)}>
+                            {formatCurrencyCompact(stats.value)}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -174,15 +178,17 @@ export function UserDashboardClient({
                   {Object.entries(byDepartment)
                     .sort(([, a], [, b]) => b.value - a.value)
                     .map(([department, stats]) => (
-                      <div key={department} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{department}</p>
+                      <div key={department} className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{department}</p>
                           <p className="text-xs text-muted-foreground">
                             {stats.count} {stats.count === 1 ? 'asset' : 'assets'}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{formatCurrency(stats.value)}</p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-semibold" title={formatCurrency(stats.value)}>
+                            {formatCurrencyCompact(stats.value)}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -218,20 +224,22 @@ export function UserDashboardClient({
                 {recentAssets.map((asset) => (
                   <div
                     key={asset.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex-1">
-                      <p className="font-medium">{asset.name}</p>
-                      <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>{asset.category?.name || 'Uncategorized'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{asset.name}</p>
+                      <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
+                        <span className="truncate max-w-[120px]">{asset.category?.name || 'Uncategorized'}</span>
                         <span>•</span>
-                        <span>{asset.department?.name || 'Unassigned'}</span>
+                        <span className="truncate max-w-[120px]">{asset.department?.name || 'Unassigned'}</span>
                         <span>•</span>
-                        <span>{formatDate(asset.date_purchased)}</span>
+                        <span className="whitespace-nowrap">{formatDate(asset.date_purchased)}</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(Number(asset.cost))}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold whitespace-nowrap" title={formatCurrency(Number(asset.cost))}>
+                        {formatCurrencyCompact(Number(asset.cost))}
+                      </p>
                     </div>
                   </div>
                 ))}

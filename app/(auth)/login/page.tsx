@@ -22,14 +22,17 @@ export default async function LoginPage() {
         {/* Logo and App Name */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <Image
-              src="/eport-logo.webp"
-              alt="ePort Logo"
-              width={200}
-              height={60}
-              priority
-              className="h-auto w-auto max-w-[200px]"
-            />
+            <div className="relative w-[200px] h-[60px]">
+              <Image
+                src="/eport-logo.webp"
+                alt="ePort Logo"
+                width={200}
+                height={60}
+                priority
+                className="object-contain"
+                style={{ width: '200px', height: '60px' }}
+              />
+            </div>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Asset Manager

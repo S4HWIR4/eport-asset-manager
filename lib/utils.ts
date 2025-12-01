@@ -24,6 +24,70 @@ export function formatCurrency(amount: number | null | undefined, currency: stri
 }
 
 /**
+ * Format a number as compact currency (e.g., $1.2K, $3.5M, $1.2B)
+ * Perfect for dashboard cards where space is limited
+ * @param amount - The numeric amount to format
+ * @param currency - Currency symbol (default: '$')
+ * @returns Compact formatted currency string
+ */
+export function formatCurrencyCompact(amount: number | null | undefined, currency: string = '$'): string {
+  // Handle null, undefined, NaN, and Infinity
+  if (amount == null || !isFinite(amount)) {
+    return `${currency}0`;
+  }
+
+  const absAmount = Math.abs(amount);
+  
+  // Less than 1,000 - show full amount with decimals
+  if (absAmount < 1000) {
+    return `${currency}${amount.toFixed(2)}`;
+  }
+  
+  // 1,000 - 999,999 - show as K (thousands)
+  if (absAmount < 1000000) {
+    const thousands = amount / 1000;
+    return `${currency}${thousands.toFixed(1)}K`;
+  }
+  
+  // 1,000,000 - 999,999,999 - show as M (millions)
+  if (absAmount < 1000000000) {
+    const millions = amount / 1000000;
+    return `${currency}${millions.toFixed(1)}M`;
+  }
+  
+  // 1,000,000,000+ - show as B (billions)
+  const billions = amount / 1000000000;
+  return `${currency}${billions.toFixed(1)}B`;
+}
+
+/**
+ * Format a large number in compact notation (e.g., 1.2K, 3.5M)
+ * @param num - The number to format
+ * @returns Compact formatted number string
+ */
+export function formatNumberCompact(num: number | null | undefined): string {
+  if (num == null || !isFinite(num)) {
+    return '0';
+  }
+
+  const absNum = Math.abs(num);
+  
+  if (absNum < 1000) {
+    return num.toString();
+  }
+  
+  if (absNum < 1000000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  
+  if (absNum < 1000000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  
+  return `${(num / 1000000000).toFixed(1)}B`;
+}
+
+/**
  * Format a date string for display without timezone shifts
  * @param dateString - ISO date string from database (YYYY-MM-DD or full timestamp)
  * @returns Formatted date string (e.g., "Jan 15, 2024")
