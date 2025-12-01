@@ -118,14 +118,14 @@ export function Sidebar({
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-card border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative w-20 h-6">
-            <Image
-              src="/eport-logo.webp"
-              alt="ePort Logo"
-              fill
-              className="object-contain object-left"
-            />
-          </div>
+          <Image
+            src="/eport-logo.webp"
+            alt="ePort Logo"
+            width={44}
+            height={13}
+            className="object-contain"
+            priority
+          />
           <div className="flex flex-col">
             <span className="text-sm font-bold text-gray-900 dark:text-gray-100">Asset Manager</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium w-fit">
@@ -163,14 +163,14 @@ export function Sidebar({
             isCollapsed && 'lg:p-4 lg:justify-center'
           )}>
             <div className={cn('flex flex-col gap-2', isCollapsed && 'lg:hidden')}>
-              <div className="relative w-full max-w-[180px] h-10">
-                <Image
-                  src="/eport-logo.webp"
-                  alt="ePort Logo"
-                  fill
-                  className="object-contain object-left"
-                />
-              </div>
+              <Image
+                src="/eport-logo.webp"
+                alt="ePort Logo"
+                width={99}
+                height={22}
+                className="object-contain"
+                priority
+              />
               <div className="flex flex-col gap-1">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Asset Manager</h1>
                 <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium w-fit">
@@ -180,14 +180,14 @@ export function Sidebar({
             </div>
             {/* Collapsed logo */}
             <div className={cn('hidden', isCollapsed && 'lg:flex lg:flex-col lg:items-center lg:gap-2')}>
-              <div className="relative w-12 h-4">
-                <Image
-                  src="/eport-logo.webp"
-                  alt="ePort Logo"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+              <Image
+                src="/eport-logo.webp"
+                alt="ePort Logo"
+                width={26}
+                height={9}
+                className="object-contain"
+                priority
+              />
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-xs">AM</span>
               </div>

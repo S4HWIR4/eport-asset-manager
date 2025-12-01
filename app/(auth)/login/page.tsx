@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/app/actions/auth';
 import LoginForm from './login-form';
-import Image from 'next/image';
 
 export default async function LoginPage() {
   // Check if user is already logged in
@@ -22,17 +21,15 @@ export default async function LoginPage() {
         {/* Logo and App Name */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="relative w-[200px] h-[60px] overflow-hidden">
-              <Image
-                src="/eport-logo.webp"
-                alt="ePort Logo"
-                fill
-                priority
-                sizes="200px"
-                className="object-contain"
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/eport-logo.webp"
+              alt="ePort Logo"
+              width="200"
+              height="60"
+              className="h-[60px] w-[200px] object-contain"
+              style={{ maxWidth: '200px', maxHeight: '60px' }}
+            />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Asset Manager

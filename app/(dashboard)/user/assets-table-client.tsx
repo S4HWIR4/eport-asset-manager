@@ -165,18 +165,27 @@ export function AssetsTableClient({
       setLoadingRequests(true);
       const requests: Record<string, DeletionRequest> = {};
       
-      // Fetch deletion requests for each asset
-      await Promise.all(
-        assets.map(async (asset) => {
-          const result = await getDeletionRequestForAsset(asset.id);
-          if (result.success && result.data) {
-            requests[asset.id] = result.data;
-          }
-        })
-      );
-      
-      setDeletionRequests(requests);
-      setLoadingRequests(false);
+      try {
+        // Fetch deletion requests for each asset with timeout
+        await Promise.all(
+          assets.map(async (asset) => {
+            try {
+              const result = await getDeletionRequestForAsset(asset.id);
+              if (result.success && result.data) {
+                requests[asset.id] = result.data;
+              }
+            } catch (error) {
+              // Silently fail for individual assets
+              console.error(`Failed to fetch deletion request for asset ${asset.id}:`, error);
+            }
+          })
+        );
+      } catch (error) {
+        console.error('Failed to fetch deletion requests:', error);
+      } finally {
+        setDeletionRequests(requests);
+        setLoadingRequests(false);
+      }
     };
 
     if (assets.length > 0) {
@@ -468,13 +477,13 @@ export function AssetsTableClient({
                         {formatCurrency(Number(asset.cost))}
                       </TableCell>
                       <TableCell>
-                        {loadingRequests ? (
+                        {deletionRequests[asset.id] ? (
+                          <DeletionRequestBadge status={deletionRequests[asset.id].status} />
+                        ) : loadingRequests ? (
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            <span className="text-sm">Loading...</span>
+                            <span className="text-sm text-xs">Loading...</span>
                           </div>
-                        ) : deletionRequests[asset.id] ? (
-                          <DeletionRequestBadge status={deletionRequests[asset.id].status} />
                         ) : (
                           <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
                             <CheckCircle className="h-4 w-4" />
