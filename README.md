@@ -8,7 +8,7 @@ A modern, full-featured web application for tracking and managing organizational
 
 **Demo Credentials:**
 - **Admin Account:** dev.sahwira@gmail.com / Password123
-- **User Account:** rumbi@eport.cloud / Password123
+- **User Account:** moses.marimo@eport.cloud / Password123
 
 Try it now! Login and explore the full feature set with pre-populated demo data.
 
