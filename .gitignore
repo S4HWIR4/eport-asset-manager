@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# specs and documentation
-.kiro/specs/
+# Kiro AI development environment
+.kiro/

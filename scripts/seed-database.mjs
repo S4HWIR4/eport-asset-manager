@@ -25,11 +25,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
-// Default admin credentials
-const DEFAULT_ADMIN = {
+// User credentials
+const ADMIN_USER = {
   email: 'dev.sahwira@gmail.com',
-  password: 'Password123',
-  fullName: 'Admin User',
+};
+
+const REGULAR_USER = {
+  email: 'rumbi@eport.cloud',
 };
 
 // Seed data
@@ -49,166 +51,281 @@ const DEPARTMENTS = [
   'Marketing',
 ];
 
+const ASSETS = [
+  // Admin-created assets (3)
+  {
+    name: 'Dell Latitude 5520 Laptop',
+    date_purchased: '2024-01-15',
+    cost: 1299.99,
+    category: 'Computer Equipment',
+    department: 'IT Department',
+    createdBy: 'admin',
+  },
+  {
+    name: 'Executive Office Desk',
+    date_purchased: '2024-02-10',
+    cost: 899.50,
+    category: 'Office Furniture',
+    department: 'Human Resources',
+    createdBy: 'admin',
+  },
+  {
+    name: 'Toyota Camry 2023',
+    date_purchased: '2023-12-01',
+    cost: 28500.00,
+    category: 'Vehicles',
+    department: 'Operations',
+    createdBy: 'admin',
+  },
+  // User-created assets (2)
+  {
+    name: 'Microsoft Office 365 License',
+    date_purchased: '2024-01-01',
+    cost: 149.99,
+    category: 'Software Licenses',
+    department: 'Finance',
+    createdBy: 'user',
+  },
+  {
+    name: 'Cisco Catalyst 48-Port Switch',
+    date_purchased: '2024-03-05',
+    cost: 2499.00,
+    category: 'Network Equipment',
+    department: 'IT Department',
+    createdBy: 'user',
+  },
+];
+
 async function seedDatabase() {
   console.log('🌱 Starting database seeding...\n');
 
   try {
-    // 1. Create default admin user
-    console.log('👤 Creating default admin user...');
+    // 1. Create or get existing users
+    console.log('👤 Setting up users...');
     
-    // Check if admin already exists
-    const { data: existingUser } = await supabase
+    // Create admin user if doesn't exist
+    let adminUser = await supabase
       .from('profiles')
       .select('id, email, role')
-      .eq('email', DEFAULT_ADMIN.email)
-      .single();
+      .eq('email', ADMIN_USER.email)
+      .single()
+      .then(res => res.data);
 
-    let adminUserId;
-
-    if (existingUser) {
-      console.log(`✅ Admin user already exists: ${existingUser.email}`);
-      adminUserId = existingUser.id;
+    if (!adminUser) {
+      console.log(`Creating admin user: ${ADMIN_USER.email}...`);
       
-      // Ensure role is admin
-      if (existingUser.role !== 'admin') {
-        console.log('   Updating role to admin...');
-        await supabase
-          .from('profiles')
-          .update({ role: 'admin' })
-          .eq('id', existingUser.id);
-        console.log('   ✅ Role updated to admin');
-      }
-    } else {
-      // Create new admin user
-      const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-        email: DEFAULT_ADMIN.email,
-        password: DEFAULT_ADMIN.password,
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: ADMIN_USER.email,
+        password: 'Password123',
         email_confirm: true,
-        user_metadata: {
-          full_name: DEFAULT_ADMIN.fullName,
-        },
       });
 
-      if (userError) {
-        throw new Error(`Failed to create admin user: ${userError.message}`);
+      if (authError) {
+        throw new Error(`Failed to create admin user in Auth: ${authError.message}`);
       }
 
-      adminUserId = userData.user.id;
-      console.log(`✅ Admin user created: ${DEFAULT_ADMIN.email}`);
-
-      // Wait for trigger to create profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Update profile to admin role
-      const { error: profileError } = await supabase
+      // Create profile (should be automatic via trigger, but let's ensure it)
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .update({ 
+        .upsert({
+          id: authData.user.id,
+          email: ADMIN_USER.email,
           role: 'admin',
-          full_name: DEFAULT_ADMIN.fullName 
         })
-        .eq('id', adminUserId);
+        .select()
+        .single();
 
       if (profileError) {
-        console.warn(`⚠️  Warning: Could not set admin role: ${profileError.message}`);
-      } else {
-        console.log('   ✅ Admin role set');
+        throw new Error(`Failed to create admin profile: ${profileError.message}`);
       }
+
+      adminUser = profileData;
+      console.log(`✅ Created admin user: ${ADMIN_USER.email}`);
+    } else {
+      // Ensure user is admin
+      if (adminUser.role !== 'admin') {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: 'admin' })
+          .eq('id', adminUser.id);
+
+        if (updateError) {
+          console.warn(`⚠️  Warning: Could not update user role to admin: ${updateError.message}`);
+        } else {
+          console.log(`✅ Updated ${ADMIN_USER.email} role to admin`);
+        }
+      } else {
+        console.log(`✅ Found existing admin user: ${adminUser.email}`);
+      }
+    }
+
+    // Create regular user if doesn't exist
+    let regularUser = await supabase
+      .from('profiles')
+      .select('id, email, role')
+      .eq('email', REGULAR_USER.email)
+      .single()
+      .then(res => res.data);
+
+    if (!regularUser) {
+      console.log(`Creating regular user: ${REGULAR_USER.email}...`);
+      
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: REGULAR_USER.email,
+        password: 'Password123',
+        email_confirm: true,
+      });
+
+      if (authError) {
+        throw new Error(`Failed to create regular user in Auth: ${authError.message}`);
+      }
+
+      // Create profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: REGULAR_USER.email,
+          role: 'user',
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        throw new Error(`Failed to create regular user profile: ${profileError.message}`);
+      }
+
+      regularUser = profileData;
+      console.log(`✅ Created regular user: ${REGULAR_USER.email}`);
+    } else {
+      console.log(`✅ Found existing regular user: ${regularUser.email}`);
     }
 
     console.log('');
 
     // 2. Seed categories
     console.log('📁 Seeding categories...');
-    const { data: existingCategories } = await supabase
+    const { error: categoryError } = await supabase
       .from('categories')
-      .select('name');
+      .insert(
+        CATEGORIES.map(name => ({
+          name,
+          created_by: adminUser.id,
+        }))
+      );
 
-    const existingCategoryNames = new Set(existingCategories?.map(c => c.name) || []);
-    const categoriesToCreate = CATEGORIES.filter(name => !existingCategoryNames.has(name));
-
-    if (categoriesToCreate.length > 0) {
-      const { error: categoryError } = await supabase
-        .from('categories')
-        .insert(
-          categoriesToCreate.map(name => ({
-            name,
-            created_by: adminUserId,
-          }))
-        );
-
-      if (categoryError) {
-        console.error(`⚠️  Warning: Could not create some categories: ${categoryError.message}`);
-      } else {
-        console.log(`✅ Created ${categoriesToCreate.length} categories`);
-      }
-    } else {
-      console.log('✅ All categories already exist');
+    if (categoryError) {
+      throw new Error(`Failed to create categories: ${categoryError.message}`);
     }
 
-    // Show all categories
-    const { data: allCategories } = await supabase
-      .from('categories')
-      .select('name')
-      .order('name');
-    
-    if (allCategories) {
-      console.log(`   Total categories: ${allCategories.length}`);
-      allCategories.forEach(c => console.log(`   - ${c.name}`));
-    }
-
+    console.log(`✅ Created ${CATEGORIES.length} categories`);
+    CATEGORIES.forEach(c => console.log(`   - ${c}`));
     console.log('');
 
     // 3. Seed departments
     console.log('🏢 Seeding departments...');
-    const { data: existingDepartments } = await supabase
+    const { error: departmentError } = await supabase
       .from('departments')
-      .select('name');
+      .insert(
+        DEPARTMENTS.map(name => ({
+          name,
+          created_by: adminUser.id,
+        }))
+      );
 
-    const existingDepartmentNames = new Set(existingDepartments?.map(d => d.name) || []);
-    const departmentsToCreate = DEPARTMENTS.filter(name => !existingDepartmentNames.has(name));
-
-    if (departmentsToCreate.length > 0) {
-      const { error: departmentError } = await supabase
-        .from('departments')
-        .insert(
-          departmentsToCreate.map(name => ({
-            name,
-            created_by: adminUserId,
-          }))
-        );
-
-      if (departmentError) {
-        console.error(`⚠️  Warning: Could not create some departments: ${departmentError.message}`);
-      } else {
-        console.log(`✅ Created ${departmentsToCreate.length} departments`);
-      }
-    } else {
-      console.log('✅ All departments already exist');
+    if (departmentError) {
+      throw new Error(`Failed to create departments: ${departmentError.message}`);
     }
 
-    // Show all departments
-    const { data: allDepartments } = await supabase
+    console.log(`✅ Created ${DEPARTMENTS.length} departments`);
+    DEPARTMENTS.forEach(d => console.log(`   - ${d}`));
+    console.log('');
+
+    // 4. Get category and department IDs for assets
+    console.log('📦 Preparing to seed assets...');
+    const { data: categories } = await supabase
+      .from('categories')
+      .select('id, name');
+
+    const { data: departments } = await supabase
       .from('departments')
-      .select('name')
-      .order('name');
+      .select('id, name');
+
+    const categoryMap = new Map(categories?.map(c => [c.name, c.id]) || []);
+    const departmentMap = new Map(departments?.map(d => [d.name, d.id]) || []);
+
+    // 5. Seed assets
+    console.log('💼 Seeding assets...');
     
-    if (allDepartments) {
-      console.log(`   Total departments: ${allDepartments.length}`);
-      allDepartments.forEach(d => console.log(`   - ${d.name}`));
+    const assetsToCreate = ASSETS.map(asset => ({
+      name: asset.name,
+      date_purchased: asset.date_purchased,
+      cost: asset.cost,
+      category_id: categoryMap.get(asset.category),
+      department_id: departmentMap.get(asset.department),
+      created_by: asset.createdBy === 'admin' ? adminUser.id : regularUser.id,
+    }));
+
+    const { data: createdAssets, error: assetError } = await supabase
+      .from('assets')
+      .insert(assetsToCreate)
+      .select();
+
+    if (assetError) {
+      throw new Error(`Failed to create assets: ${assetError.message}`);
+    }
+
+    const adminAssets = ASSETS.filter(a => a.createdBy === 'admin').length;
+    const userAssets = ASSETS.filter(a => a.createdBy === 'user').length;
+
+    console.log(`✅ Created ${ASSETS.length} assets`);
+    console.log(`   - ${adminAssets} created by admin`);
+    console.log(`   - ${userAssets} created by user`);
+    ASSETS.forEach(a => console.log(`   - ${a.name} (${a.createdBy})`));
+
+    // 6. Create audit logs for the created assets
+    console.log('');
+    console.log('📝 Creating audit logs for assets...');
+    
+    const auditLogs = createdAssets.map((asset, index) => ({
+      entity_type: 'asset',
+      entity_id: asset.id,
+      action: 'asset_created',
+      performed_by: asset.created_by,
+      entity_data: {
+        name: asset.name,
+        cost: asset.cost,
+        date_purchased: asset.date_purchased,
+        category_id: asset.category_id,
+        department_id: asset.department_id,
+      },
+    }));
+
+    const { error: auditError } = await supabase
+      .from('audit_logs')
+      .insert(auditLogs);
+
+    if (auditError) {
+      console.warn(`⚠️  Warning: Could not create audit logs: ${auditError.message}`);
+    } else {
+      console.log(`✅ Created ${auditLogs.length} audit log entries`);
     }
 
     console.log('');
     console.log('✨ Database seeding completed successfully!\n');
     console.log('📋 Summary:');
-    console.log(`   Admin User: ${DEFAULT_ADMIN.email}`);
-    console.log(`   Password: ${DEFAULT_ADMIN.password}`);
-    console.log(`   Categories: ${allCategories?.length || 0}`);
-    console.log(`   Departments: ${allDepartments?.length || 0}`);
+    console.log(`   👤 Admin User: ${ADMIN_USER.email} (Password: Password123)`);
+    console.log(`   👤 Regular User: ${REGULAR_USER.email} (Password: Password123)`);
+    console.log(`   📁 Categories: ${CATEGORIES.length}`);
+    console.log(`   🏢 Departments: ${DEPARTMENTS.length}`);
+    console.log(`   💼 Assets: ${ASSETS.length} (${adminAssets} by admin, ${userAssets} by user)`);
+    console.log(`   📝 Audit Logs: ${auditLogs.length}`);
     console.log('');
-    console.log('🚀 Next steps:');
-    console.log('   1. Run: npm run dev');
-    console.log('   2. Navigate to: http://localhost:3000');
-    console.log(`   3. Login with: ${DEFAULT_ADMIN.email}\n`);
+    console.log('🚀 You can now login at http://localhost:3000');
+    console.log(`   Email: ${ADMIN_USER.email}`);
+    console.log(`   Password: Password123\n`);
 
   } catch (error) {
     console.error('❌ Error during seeding:', error.message);

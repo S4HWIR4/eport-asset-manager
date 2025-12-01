@@ -147,10 +147,9 @@ npm run db:seed
 
 This creates:
 
-### Default Admin User
-- **Email**: dev.sahwira@gmail.com
-- **Password**: Password123
-- **Role**: Admin
+### Default Users
+- **Admin User**: dev.sahwira@gmail.com (Password: Password123)
+- **Regular User**: rumbi@eport.cloud (Password: Password123)
 
 ### Categories (5)
 - Computer Equipment
@@ -166,7 +165,15 @@ This creates:
 - Operations
 - Marketing
 
-**Note**: The seeder is idempotent - it won't create duplicates if run multiple times.
+### Sample Assets (5)
+- 3 assets created by admin user
+- 2 assets created by regular user
+
+**Note**: The seeder is idempotent and intelligent:
+- Creates users in Supabase Auth if they don't exist
+- Uses existing users if they're already created
+- Won't create duplicate categories, departments, or assets
+- Safe to run multiple times
 
 ## Running the Application
 
@@ -277,10 +284,16 @@ After logging in:
 ### Issue: Seeder Fails
 
 **Solution**:
-1. Ensure the database schema is set up first
-2. Check that the service_role key is correct
-3. Verify the admin user doesn't already exist
-4. Check for any constraint violations in Supabase logs
+1. **Ensure the database schema is set up first** - Run the migration before seeding
+2. **Check environment variables** - Verify `SUPABASE_SERVICE_ROLE_KEY` is correct
+3. **Check Supabase Auth is enabled** - Go to Dashboard → Authentication → Providers
+4. **Review error message** - The seeder provides detailed error messages
+5. **Check Supabase logs** - Dashboard → Logs → Postgres Logs for specific errors
+
+**Common Issues:**
+- "Failed to create user in Auth" → Check that email confirmations are disabled for development
+- "Failed to create profile" → Ensure the profiles table exists (run migration first)
+- "Failed to create categories" → Check that the categories table exists
 
 ## Next Steps
 

@@ -31,80 +31,87 @@ Before you begin, ensure you have the following installed:
 
 ## Quick Start
 
-### 1. Clone the Repository
+Get the app running in 5 minutes:
+
+### 1. Clone and Install
 
 ```bash
 git clone <repository-url>
 cd asset-manager
-```
-
-### 2. Install Dependencies
-
-```bash
 npm install
 ```
 
-### 3. Set Up Environment Variables
+### 2. Set Up Supabase
 
-Copy the example environment file and fill in your Supabase credentials:
+1. Create a free account at [supabase.com](https://supabase.com)
+2. Create a new project (wait 2-3 minutes for provisioning)
+3. Go to Settings → API and copy your credentials
+
+### 3. Configure Environment
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` with your Supabase project details:
+Edit `.env.local` with your Supabase credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-**Where to find these values:**
-1. Go to [Supabase Dashboard](https://app.supabase.com)
-2. Select your project
-3. Go to Settings → API
-4. Copy the Project URL, anon/public key, and service_role key
+### 4. Set Up Database Schema
 
-### 4. Set Up the Database
+**Option A: Using Supabase SQL Editor (Easiest)**
 
-Run the consolidated migration to create all tables, functions, and policies:
+1. Open your Supabase project dashboard
+2. Go to SQL Editor → New Query
+3. Copy the entire contents of `supabase/migrations/00000000000000_consolidated_schema.sql`
+4. Paste and click **Run**
+
+**Option B: Using Supabase CLI**
 
 ```bash
-# Option 1: Using Supabase CLI (recommended)
+supabase login
+supabase link --project-ref your-project-ref
 supabase db push
-
-# Option 2: Manual SQL execution
-# Copy the contents of supabase/migrations/00000000000000_consolidated_schema.sql
-# and run it in the Supabase SQL Editor
 ```
 
-### 5. Seed the Database
-
-Seed the database with default data (admin user, categories, and departments):
+### 5. Seed with Demo Data
 
 ```bash
 npm run db:seed
 ```
 
-This creates:
-- **Admin User**: dev.sahwira@gmail.com (Password: Password123)
-- **5 Categories**: Computer Equipment, Office Furniture, Vehicles, Software Licenses, Network Equipment
-- **5 Departments**: IT Department, Human Resources, Finance, Operations, Marketing
+This automatically creates:
+- ✅ 2 demo users (admin + regular user)
+- ✅ 5 categories
+- ✅ 5 departments
+- ✅ 5 sample assets
+- ✅ Audit log entries
 
-### 6. Run the Development Server
+### 6. Start the App
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
 ### 7. Login
 
-Use the default admin credentials:
-- **Email**: dev.sahwira@gmail.com
-- **Password**: Password123
+**Admin Account:**
+- Email: `dev.sahwira@gmail.com`
+- Password: `Password123`
+
+**Regular User Account:**
+- Email: `rumbi@eport.cloud`
+- Password: `Password123`
+
+---
+
+**That's it!** 🎉 You now have a fully functional asset management system with demo data.
 
 ## Available Scripts
 
