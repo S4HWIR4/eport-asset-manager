@@ -2,6 +2,16 @@
 
 A modern, full-featured web application for tracking and managing organizational assets with role-based access control, audit logging, and a comprehensive asset deletion workflow.
 
+## 🚀 Live Demo
+
+**Production URL:** [https://eport-asset-manager-beta.vercel.app/](https://eport-asset-manager-beta.vercel.app/)
+
+**Demo Credentials:**
+- **Admin Account:** dev.sahwira@gmail.com / Password123
+- **User Account:** rumbi@eport.cloud / Password123
+
+Try it now! Login and explore the full feature set with pre-populated demo data.
+
 ## Features
 
 - **Role-Based Access Control**: Admin and user roles with granular permissions
