@@ -217,6 +217,17 @@ async function seedDatabase() {
       );
 
     if (categoryError) {
+      if (categoryError.code === '23505') {
+        console.error('❌ Database already contains data!');
+        console.error('');
+        console.error('💡 To reseed the database, first run the cleanup script:');
+        console.error('   node scripts/cleanup-database.mjs');
+        console.error('');
+        console.error('   Then run the seeder again:');
+        console.error('   npm run db:seed');
+        console.error('');
+        process.exit(1);
+      }
       throw new Error(`Failed to create categories: ${categoryError.message}`);
     }
 

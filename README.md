@@ -101,6 +101,12 @@ This automatically creates:
 - ✅ 5 sample assets
 - ✅ Audit log entries
 
+> **⚠️ Important:** If the database already contains data, the seeder will fail. Run the cleanup script first:
+> ```bash
+> node scripts/cleanup-database.mjs
+> npm run db:seed
+> ```
+
 ### 6. Start the App
 
 ```bash
@@ -137,10 +143,13 @@ npm run lint         # Run ESLint
 ### Database Management
 
 ```bash
-npm run db:seed      # Seed database with default data
-npm run db:setup     # Initial database setup (legacy)
-npm run db:verify    # Verify database setup
+npm run db:seed                      # Seed database with default data
+npm run db:setup                     # Initial database setup (legacy)
+npm run db:verify                    # Verify database setup
+node scripts/cleanup-database.mjs    # ⚠️ Clean database before reseeding
 ```
+
+> **💡 Tip:** If seeding fails due to existing data, run `cleanup-database.mjs` first to reset the database while preserving the two main user accounts.
 
 ### Testing
 
