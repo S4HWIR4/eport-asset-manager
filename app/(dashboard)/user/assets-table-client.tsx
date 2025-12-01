@@ -468,7 +468,12 @@ export function AssetsTableClient({
                         {formatCurrency(Number(asset.cost))}
                       </TableCell>
                       <TableCell>
-                        {deletionRequests[asset.id] ? (
+                        {loadingRequests ? (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span className="text-sm">Loading...</span>
+                          </div>
+                        ) : deletionRequests[asset.id] ? (
                           <DeletionRequestBadge status={deletionRequests[asset.id].status} />
                         ) : (
                           <div className="flex items-center gap-1 text-green-600 dark:text-green-400">

@@ -22,15 +22,15 @@ export default async function LoginPage() {
         {/* Logo and App Name */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="relative w-[200px] h-[60px]">
+            <div className="relative w-[200px] h-[60px] overflow-hidden">
               <Image
                 src="/eport-logo.webp"
                 alt="ePort Logo"
-                width={200}
-                height={60}
+                fill
                 priority
+                sizes="200px"
                 className="object-contain"
-                style={{ width: '200px', height: '60px' }}
+                style={{ objectFit: 'contain' }}
               />
             </div>
           </div>
