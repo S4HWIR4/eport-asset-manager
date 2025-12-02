@@ -32,16 +32,19 @@ export function TablePagination({
   const endRecord = Math.min(currentPage * pageSize, totalRecords);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Record count - full width on mobile */}
+      <div className="flex items-center justify-center sm:justify-start">
         <p className="text-sm text-muted-foreground">
           Showing {startRecord}-{endRecord} of {totalRecords} records
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">Rows per page:</p>
+      {/* Controls - stack on mobile, inline on desktop */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        {/* Rows per page selector */}
+        <div className="flex items-center justify-center gap-2 sm:justify-start">
+          <p className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</p>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
@@ -59,16 +62,18 @@ export function TablePagination({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Page navigation */}
+        <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
+            className="min-h-[44px] min-w-[44px]"
           >
             Previous
           </Button>
-          <span className="text-sm">
+          <span className="text-sm whitespace-nowrap px-2">
             Page {currentPage} of {totalPages}
           </span>
           <Button
@@ -76,6 +81,7 @@ export function TablePagination({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages || totalPages === 0}
+            className="min-h-[44px] min-w-[44px]"
           >
             Next
           </Button>

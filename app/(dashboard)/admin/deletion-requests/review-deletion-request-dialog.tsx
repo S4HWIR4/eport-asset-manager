@@ -102,10 +102,10 @@ export function ReviewDeletionRequestDialog({
           {/* Asset Information */}
           <div>
             <h3 className="text-sm font-semibold mb-3">Asset Information</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Asset Name</p>
-                <p className="text-sm font-semibold">{request.asset_name}</p>
+                <p className="text-sm font-semibold break-words">{request.asset_name}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Cost</p>
@@ -166,13 +166,14 @@ export function ReviewDeletionRequestDialog({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           {!action ? (
             <>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
+                className="w-full sm:w-auto min-h-[44px]"
               >
                 Close
               </Button>
@@ -182,12 +183,14 @@ export function ReviewDeletionRequestDialog({
                     type="button"
                     variant="destructive"
                     onClick={() => setAction('reject')}
+                    className="w-full sm:w-auto min-h-[44px]"
                   >
                     Reject
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setAction('approve')}
+                    className="w-full sm:w-auto min-h-[44px]"
                   >
                     Approve
                   </Button>
@@ -204,6 +207,7 @@ export function ReviewDeletionRequestDialog({
                   setReviewComment('');
                 }}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto min-h-[44px]"
               >
                 Back
               </Button>
@@ -212,6 +216,7 @@ export function ReviewDeletionRequestDialog({
                 variant={action === 'reject' ? 'destructive' : 'default'}
                 onClick={action === 'reject' ? handleReject : handleApprove}
                 disabled={isSubmitting || (action === 'reject' && !reviewComment.trim())}
+                className="w-full sm:w-auto min-h-[44px]"
               >
                 {isSubmitting
                   ? 'Processing...'

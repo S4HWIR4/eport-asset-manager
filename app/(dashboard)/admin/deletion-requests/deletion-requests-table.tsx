@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -17,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ResponsiveTable } from '@/components/ui/responsive-table';
+import { MobileFilterPanel } from '@/components/ui/mobile-filter-panel';
 import { TablePagination } from '@/components/table-pagination';
 import { ArrowUp, ArrowDown, Eye } from 'lucide-react';
 import { DeletionRequestBadge } from '@/components/deletion-request-badge';
@@ -85,13 +88,16 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
   return (
     <div className="space-y-4">
       {/* Filter Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <label htmlFor="status-filter" className="text-sm font-medium">
-            Status:
-          </label>
+      <MobileFilterPanel
+        hasActiveFilters={statusFilter !== 'all'}
+        onClearFilters={() => setStatusFilter('all')}
+        collapsible={true}
+        defaultCollapsed={false}
+      >
+        <div className="space-y-2 w-full">
+          <Label htmlFor="status-filter">Status</Label>
           <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as DeletionRequestStatus | 'all')}>
-            <SelectTrigger id="status-filter" className="w-[180px]">
+            <SelectTrigger id="status-filter" className="w-full">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -103,12 +109,7 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
             </SelectContent>
           </Select>
         </div>
-        {statusFilter !== 'all' && (
-          <Button variant="ghost" onClick={() => setStatusFilter('all')} size="sm">
-            Clear filter
-          </Button>
-        )}
-      </div>
+      </MobileFilterPanel>
 
       {/* Results count */}
       {filteredAndSortedRequests.length !== requests.length && (
@@ -126,7 +127,7 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
         </div>
       ) : (
         <>
-          <div className="rounded-md border overflow-x-auto">
+          <ResponsiveTable>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -151,16 +152,16 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">
                       <div>
-                        <p>{request.asset_name}</p>
+                        <p className="break-words">{request.asset_name}</p>
                         <p className="text-xs text-muted-foreground">
                           {formatCurrency(Number(request.asset_cost))}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="break-words">
                       {request.requester?.full_name || request.requester_email}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {formatDate(request.created_at)}
                     </TableCell>
                     <TableCell>
@@ -177,6 +178,7 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
                         size="sm"
                         onClick={() => onReview(request)}
                         aria-label="Review request"
+                        className="min-h-[44px] min-w-[44px]"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -185,7 +187,7 @@ export function DeletionRequestsTable({ requests, onReview }: DeletionRequestsTa
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </ResponsiveTable>
 
           <TablePagination
             currentPage={currentPage}

@@ -11,9 +11,25 @@ import {
 interface TableSkeletonProps {
   columns: number;
   rows?: number;
+  emptyMessage?: string;
+  showEmpty?: boolean;
 }
 
-export function TableSkeleton({ columns, rows = 5 }: TableSkeletonProps) {
+export function TableSkeleton({ 
+  columns, 
+  rows = 5, 
+  emptyMessage = 'No data available',
+  showEmpty = false 
+}: TableSkeletonProps) {
+  // Show empty state when explicitly requested or when rows is 0
+  if (showEmpty || rows === 0) {
+    return (
+      <div className="text-center py-12 px-4">
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      </div>
+    );
+  }
+
   return (
     <Table>
       <TableHeader>

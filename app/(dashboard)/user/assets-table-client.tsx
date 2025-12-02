@@ -9,9 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/ui/responsive-table';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   Select,
@@ -28,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { MobileFilterPanel } from '@/components/ui/mobile-filter-panel';
 import { TablePagination } from '@/components/table-pagination';
 import { Search, Eye, Pencil, ArrowUp, ArrowDown, Trash2, CheckCircle } from 'lucide-react';
 import { EditAssetDialog } from './edit-asset-dialog';
@@ -53,7 +55,7 @@ function ViewAssetDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Asset Details</DialogTitle>
           <DialogDescription>
@@ -64,7 +66,7 @@ function ViewAssetDialog({
         <div className="py-4 space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Asset Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Asset Name</p>
                 <p className="text-sm font-semibold">{asset.name}</p>
@@ -117,8 +119,12 @@ function ViewAssetDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
             Close
           </Button>
         </DialogFooter>
@@ -341,7 +347,7 @@ export function AssetsTableClient({
     setDepartmentFilter('all');
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || departmentFilter !== 'all';
+  const hasActiveFilters = Boolean(searchQuery) || categoryFilter !== 'all' || departmentFilter !== 'all';
 
   if (assets.length === 0) {
     return (
@@ -357,21 +363,31 @@ export function AssetsTableClient({
     <>
       <div className="space-y-4">
         {/* Search and Filters */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <div className="relative flex-1 max-w-sm">
+        <MobileFilterPanel
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearFilters}
+          collapsible={true}
+          defaultCollapsed={false}
+          title="Search & Filters"
+        >
+          <div className="space-y-2 w-full">
+            <Label htmlFor="search">Search</Label>
+            <div className="relative w-full">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 id="search"
                 placeholder="Search by name..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-8"
+                className="pl-8 w-full"
               />
             </div>
+          </div>
 
+          <div className="space-y-2 w-full">
+            <Label htmlFor="category">Category</Label>
             <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-              <SelectTrigger id="category" className="w-full sm:w-[180px]">
+              <SelectTrigger id="category" className="w-full">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
@@ -383,9 +399,12 @@ export function AssetsTableClient({
                 ))}
               </SelectContent>
             </Select>
+          </div>
 
+          <div className="space-y-2 w-full">
+            <Label htmlFor="department">Department</Label>
             <Select value={departmentFilter} onValueChange={handleDepartmentChange}>
-              <SelectTrigger id="department" className="w-full sm:w-[180px]">
+              <SelectTrigger id="department" className="w-full">
                 <SelectValue placeholder="All departments" />
               </SelectTrigger>
               <SelectContent>
@@ -398,12 +417,7 @@ export function AssetsTableClient({
               </SelectContent>
             </Select>
           </div>
-          {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} size="sm" className="w-full sm:w-auto">
-              Clear filters
-            </Button>
-          )}
-        </div>
+        </MobileFilterPanel>
 
         {/* Results count */}
         {filteredAndSortedAssets.length !== assets.length && (
@@ -421,7 +435,7 @@ export function AssetsTableClient({
           </div>
         ) : (
           <>
-            <div className="rounded-md border overflow-x-auto">
+            <ResponsiveTable>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -498,6 +512,7 @@ export function AssetsTableClient({
                             size="sm"
                             onClick={() => handleViewClick(asset)}
                             aria-label="View asset details"
+                            className="min-h-[44px] min-w-[44px]"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -506,6 +521,7 @@ export function AssetsTableClient({
                             size="sm"
                             onClick={() => handleEditClick(asset)}
                             aria-label="Edit asset"
+                            className="min-h-[44px] min-w-[44px]"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -514,7 +530,7 @@ export function AssetsTableClient({
                             size="sm"
                             onClick={() => handleRequestDeletionClick(asset)}
                             aria-label="Request deletion"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950 min-h-[44px] min-w-[44px]"
                             disabled={deletionRequests[asset.id]?.status === 'pending'}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -525,7 +541,7 @@ export function AssetsTableClient({
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ResponsiveTable>
 
             <TablePagination
               currentPage={currentPage}

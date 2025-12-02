@@ -181,7 +181,7 @@ export function EditAssetDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4">
+          <div className="py-4 space-y-4 md:space-y-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">
                 Asset Name <span className="text-red-500">*</span>
@@ -292,16 +292,17 @@ export function EditAssetDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="w-full min-h-[44px] sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || isLoadingData}>
+            <Button type="submit" disabled={isSubmitting || isLoadingData} className="w-full min-h-[44px] sm:w-auto">
               {isSubmitting ? 'Updating...' : 'Update Asset'}
             </Button>
           </DialogFooter>

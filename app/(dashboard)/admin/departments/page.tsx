@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/ui/responsive-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TableSkeleton } from '@/components/table-skeleton';
 import { TablePagination } from '@/components/table-pagination';
@@ -163,8 +164,8 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
       )}
 
       {/* Search Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex-1 space-y-2 max-w-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="flex-1 space-y-2 w-full md:max-w-sm">
           <Label htmlFor="search">Search</Label>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -173,12 +174,12 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
               placeholder="Search departments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
+              className="pl-8 w-full"
             />
           </div>
         </div>
         {searchQuery && (
-          <Button variant="ghost" onClick={() => setSearchQuery('')} size="sm" className="self-end">
+          <Button variant="ghost" onClick={() => setSearchQuery('')} size="sm" className="w-full md:w-auto">
             Clear search
           </Button>
         )}
@@ -200,7 +201,8 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
         </div>
       ) : (
         <>
-          <div className="rounded-md border overflow-x-auto">
+          <ResponsiveTable>
+            <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -274,6 +276,7 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
                         setEditDialogOpen(true);
                       }}
                       aria-label="Edit department"
+                      className="min-h-[44px] min-w-[44px]"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -285,6 +288,7 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
                         setDeleteDialogOpen(true);
                       }}
                       aria-label="Delete department"
+                      className="min-h-[44px] min-w-[44px]"
                     >
                       <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
@@ -295,6 +299,7 @@ function DepartmentsTable({ departments, onRefresh }: { departments: Department[
           </TableBody>
         </Table>
       </div>
+      </ResponsiveTable>
 
       <TablePagination
         currentPage={currentPage}
@@ -370,14 +375,14 @@ export default function DepartmentsPage() {
           <CreateDepartmentDialog />
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="p-4 md:py-6">
+          <CardHeader className="px-0">
             <CardTitle>All Departments</CardTitle>
             <CardDescription>
               Manage your organizational departments
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0">
             {isLoading ? (
               <TableSkeleton columns={2} rows={10} />
             ) : (

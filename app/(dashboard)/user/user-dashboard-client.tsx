@@ -70,50 +70,50 @@ export function UserDashboardClient({
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6 lg:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Dashboard</h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-300">
             Welcome back, {userName}
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader>
-              <CardTitle>My Assets</CardTitle>
-              <CardDescription>Total assets tracked</CardDescription>
+              <CardTitle className="text-base sm:text-lg">My Assets</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Total assets tracked</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{assets.length}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total assets</p>
+              <p className="text-xl sm:text-2xl font-bold">{assets.length}</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total assets</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Total Value</CardTitle>
-              <CardDescription>Combined value of all assets</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Total Value</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Combined value of all assets</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold truncate" title={formatCurrency(totalValue)}>
+              <p className="text-xl sm:text-2xl font-bold truncate" title={formatCurrency(totalValue)}>
                 {formatCurrencyCompact(totalValue)}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total cost</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total cost</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Pending Deletions</CardTitle>
-              <CardDescription>Awaiting admin review</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Pending Deletions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Awaiting admin review</CardDescription>
             </CardHeader>
             <CardContent>
               {loadingDeletionRequests ? (
-                <p className="text-2xl font-bold text-muted-foreground">...</p>
+                <p className="text-xl sm:text-2xl font-bold text-muted-foreground">...</p>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{pendingDeletionCount}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-xl sm:text-2xl font-bold">{pendingDeletionCount}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {pendingDeletionCount === 1 ? 'Request pending' : 'Requests pending'}
                   </p>
                 </>
@@ -123,8 +123,8 @@ export function UserDashboardClient({
 
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Common tasks</CardDescription>
             </CardHeader>
             <CardContent>
               <CreateAssetDialog />
@@ -132,29 +132,29 @@ export function UserDashboardClient({
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 mt-6">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 mt-4 sm:mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Assets by Category</CardTitle>
-              <CardDescription>Distribution across categories</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Assets by Category</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Distribution across categories</CardDescription>
             </CardHeader>
             <CardContent>
               {Object.keys(byCategory).length === 0 ? (
-                <p className="text-sm text-muted-foreground">No assets yet</p>
+                <p className="text-xs sm:text-sm text-muted-foreground py-4">No assets yet</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {Object.entries(byCategory)
                     .sort(([, a], [, b]) => b.value - a.value)
                     .map(([category, stats]) => (
                       <div key={category} className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{category}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs sm:text-sm font-medium truncate">{category}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">
                             {stats.count} {stats.count === 1 ? 'asset' : 'assets'}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-semibold" title={formatCurrency(stats.value)}>
+                          <p className="text-xs sm:text-sm font-semibold" title={formatCurrency(stats.value)}>
                             {formatCurrencyCompact(stats.value)}
                           </p>
                         </div>
@@ -167,26 +167,26 @@ export function UserDashboardClient({
 
           <Card>
             <CardHeader>
-              <CardTitle>Assets by Department</CardTitle>
-              <CardDescription>Distribution across departments</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Assets by Department</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Distribution across departments</CardDescription>
             </CardHeader>
             <CardContent>
               {Object.keys(byDepartment).length === 0 ? (
-                <p className="text-sm text-muted-foreground">No assets yet</p>
+                <p className="text-xs sm:text-sm text-muted-foreground py-4">No assets yet</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {Object.entries(byDepartment)
                     .sort(([, a], [, b]) => b.value - a.value)
                     .map(([department, stats]) => (
                       <div key={department} className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{department}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs sm:text-sm font-medium truncate">{department}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">
                             {stats.count} {stats.count === 1 ? 'asset' : 'assets'}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-semibold" title={formatCurrency(stats.value)}>
+                          <p className="text-xs sm:text-sm font-semibold" title={formatCurrency(stats.value)}>
                             {formatCurrencyCompact(stats.value)}
                           </p>
                         </div>
@@ -199,36 +199,36 @@ export function UserDashboardClient({
         </div>
 
         {/* Recent Assets Preview */}
-        <Card className="mt-6">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <Card className="mt-4 sm:mt-6">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
             <div>
-              <CardTitle>Recent Assets</CardTitle>
-              <CardDescription>Your 5 most recently created assets</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Recent Assets</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Your 5 most recently created assets</CardDescription>
             </div>
-            <Link href="/user/assets">
-              <Button variant="outline" size="sm">
+            <Link href="/user/assets" className="w-full sm:w-auto">
+              <Button variant="outline" size="default" className="w-full sm:w-auto min-h-[44px]">
                 View All Assets
               </Button>
             </Link>
           </CardHeader>
           <CardContent>
             {recentAssets.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
+              <div className="text-center py-12 sm:py-16 px-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-4">
                   No assets yet. Create your first asset to get started.
                 </p>
                 <CreateAssetDialog />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentAssets.map((asset) => (
                   <div
                     key={asset.id}
-                    className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{asset.name}</p>
-                      <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
+                      <p className="font-medium truncate text-sm sm:text-base">{asset.name}</p>
+                      <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-muted-foreground">
                         <span className="truncate max-w-[120px]">{asset.category?.name || 'Uncategorized'}</span>
                         <span>•</span>
                         <span className="truncate max-w-[120px]">{asset.department?.name || 'Unassigned'}</span>
@@ -236,8 +236,8 @@ export function UserDashboardClient({
                         <span className="whitespace-nowrap">{formatDate(asset.date_purchased)}</span>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-semibold whitespace-nowrap" title={formatCurrency(Number(asset.cost))}>
+                    <div className="text-left sm:text-right flex-shrink-0">
+                      <p className="font-semibold whitespace-nowrap text-sm sm:text-base" title={formatCurrency(Number(asset.cost))}>
                         {formatCurrencyCompact(Number(asset.cost))}
                       </p>
                     </div>

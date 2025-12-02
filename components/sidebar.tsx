@@ -14,7 +14,6 @@ import {
   FolderOpen,
   Building2,
   Package,
-  Plus,
   LogOut,
   Menu,
   X,
@@ -32,6 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useScrollLock } from '@/lib/hooks/use-scroll-lock';
 
 interface SidebarProps {
   userRole: UserRole;
@@ -108,14 +108,21 @@ export function Sidebar({
 
   const navSections = userRole === 'admin' ? getAdminNavSections(pendingDeletionRequestsCount) : userNavSections;
 
+  // Lock scroll when mobile menu is open
+  useScrollLock(isMobileMenuOpen);
+
   const handleSignOut = async () => {
     setIsSigningOut(true);
     await signOut();
   };
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile menu button - Fixed position, always accessible */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-card border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image
@@ -124,6 +131,7 @@ export function Sidebar({
             width={44}
             height={13}
             className="object-contain"
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
           <div className="flex flex-col">
@@ -135,8 +143,9 @@ export function Sidebar({
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Toggle menu"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileMenuOpen}
         >
           {isMobileMenuOpen ? (
             <X className="w-6 h-6 dark:text-gray-100" />
@@ -169,6 +178,7 @@ export function Sidebar({
                 width={99}
                 height={22}
                 className="object-contain"
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
               <div className="flex flex-col gap-1">
@@ -186,6 +196,7 @@ export function Sidebar({
                 width={26}
                 height={9}
                 className="object-contain"
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -231,7 +242,7 @@ export function Sidebar({
           <TooltipProvider delayDuration={300}>
             <nav className="flex-1 px-3 py-4 overflow-y-auto">
               <div className="space-y-6">
-                {navSections.map((section, sectionIndex) => (
+                {navSections.map((section) => (
                 <div key={section.title}>
                   {/* Section Header */}
                   <div className={cn(
@@ -264,9 +275,9 @@ export function Sidebar({
                       const linkContent = (
                         <Link
                           href={item.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={closeMobileMenu}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
                             isActive
                               ? 'bg-primary/10 text-primary'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
@@ -277,7 +288,7 @@ export function Sidebar({
                           <span className={cn('flex items-center gap-2', isCollapsed && 'lg:hidden')}>
                             {item.label}
                             {item.badge !== undefined && item.badge > 0 && (
-                              <Badge variant="destructive" className="ml-auto">
+                              <Badge variant="destructive" className="ml-auto min-h-[20px] min-w-[20px] flex items-center justify-center">
                                 {item.badge}
                               </Badge>
                             )}
@@ -301,7 +312,7 @@ export function Sidebar({
                           )}
                           {/* Badge for collapsed state */}
                           {isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                            <Badge variant="destructive" className="hidden lg:flex absolute -top-1 -right-1 h-5 w-5 p-0 text-[10px] items-center justify-center">
+                            <Badge variant="destructive" className="hidden lg:flex absolute -top-1 -right-1 min-h-[20px] min-w-[20px] p-0 text-[10px] items-center justify-center">
                               {item.badge > 99 ? '99+' : item.badge}
                             </Badge>
                           )}
@@ -342,11 +353,12 @@ export function Sidebar({
         </div>
       </aside>
 
-      {/* Mobile overlay */}
+      {/* Mobile overlay - Closes menu on click */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden transition-opacity"
+          onClick={closeMobileMenu}
+          aria-hidden="true"
         />
       )}
     </>

@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/ui/responsive-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,7 @@ function ViewAssetDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Asset Details</DialogTitle>
           <DialogDescription>
@@ -65,7 +66,7 @@ function ViewAssetDialog({
         <div className="py-4 space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Asset Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Asset Name</p>
                 <p className="text-sm font-semibold">{asset.name}</p>
@@ -114,7 +115,7 @@ function ViewAssetDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="min-h-[44px]">
             Close
           </Button>
         </DialogFooter>
@@ -186,6 +187,7 @@ function DeleteAssetDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
+            className="min-h-[44px]"
           >
             Cancel
           </Button>
@@ -194,6 +196,7 @@ function DeleteAssetDialog({
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
+            className="min-h-[44px]"
           >
             {isDeleting ? 'Deleting...' : 'Delete Asset'}
           </Button>
@@ -395,12 +398,17 @@ function AssetsTable({
       <div className="space-y-4">
         {/* Bulk Actions Bar */}
         {selectedAssets.size > 0 && (
-          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div className="flex flex-col gap-3 p-3 bg-muted rounded-lg sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-medium">
               {selectedAssets.size} asset(s) selected
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={clearSelection}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={clearSelection}
+                className="min-h-[44px] min-w-[44px]"
+              >
                 Clear Selection
               </Button>
               <BulkDeleteDialog
@@ -413,19 +421,19 @@ function AssetsTable({
         )}
 
         {/* Filter Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <div className="relative flex-1 max-w-sm">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-1">
+            <div className="relative w-full sm:flex-1 sm:max-w-sm">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search assets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="pl-8 min-h-[44px]"
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full min-h-[44px] sm:w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -438,7 +446,7 @@ function AssetsTable({
               </SelectContent>
             </Select>
             <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full min-h-[44px] sm:w-[180px]">
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
               <SelectContent>
@@ -452,15 +460,21 @@ function AssetsTable({
             </Select>
           </div>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} size="sm" className="w-full sm:w-auto">
+            <Button 
+              variant="ghost" 
+              onClick={clearFilters} 
+              size="sm" 
+              className="w-full min-h-[44px] sm:w-auto sm:self-end"
+            >
               Clear filters
             </Button>
           )}
         </div>
 
         {/* Table */}
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
+        <ResponsiveTable>
+          <div className="rounded-md border">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
@@ -468,7 +482,8 @@ function AssetsTable({
                     variant="ghost"
                     size="sm"
                     onClick={toggleAllAssets}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 min-h-[44px] min-w-[44px]"
+                    aria-label="Toggle all assets selection"
                   >
                     {selectedAssets.size === paginatedAssets.length && paginatedAssets.length > 0 ? (
                       <CheckSquare className="h-4 w-4" />
@@ -509,7 +524,8 @@ function AssetsTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleAssetSelection(asset.id)}
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 min-h-[44px] min-w-[44px]"
+                        aria-label={`Toggle selection for ${asset.name}`}
                       >
                         {selectedAssets.has(asset.id) ? (
                           <CheckSquare className="h-4 w-4" />
@@ -529,6 +545,7 @@ function AssetsTable({
                           size="sm"
                           onClick={() => handleViewClick(asset)}
                           aria-label="View asset details"
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -537,6 +554,7 @@ function AssetsTable({
                           size="sm"
                           onClick={() => handleEditClick(asset)}
                           aria-label="Edit asset"
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -545,6 +563,7 @@ function AssetsTable({
                           size="sm"
                           onClick={() => handleDeleteClick(asset)}
                           aria-label="Delete asset"
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
                         </Button>
@@ -555,7 +574,8 @@ function AssetsTable({
               )}
             </TableBody>
           </Table>
-        </div>
+          </div>
+        </ResponsiveTable>
 
         <TablePagination
           currentPage={currentPage}
@@ -627,6 +647,7 @@ function ErrorDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
+            className="min-h-[44px]"
           >
             Close
           </Button>
@@ -636,6 +657,7 @@ function ErrorDialog({
               onOpenChange(false);
               onRetry();
             }}
+            className="min-h-[44px]"
           >
             Retry
           </Button>
@@ -693,7 +715,7 @@ export default function AdminAssetsPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Asset Management</h1>
             <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-300">View and manage all assets in the system</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <CsvExportButton assets={assets} />
             <BulkImportDialog onSuccess={loadData} />
             <CreateAssetDialog />

@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/ui/responsive-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TableSkeleton } from '@/components/table-skeleton';
 import { TablePagination } from '@/components/table-pagination';
@@ -196,8 +197,8 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
       )}
 
       {/* Filter Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-1 flex-col gap-4 md:flex-row md:gap-2">
           <div className="flex-1 space-y-2">
             <Label htmlFor="search">Search</Label>
             <div className="relative">
@@ -207,15 +208,15 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
                 placeholder="Search by email or name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="pl-8 w-full"
               />
             </div>
           </div>
 
-          <div className="space-y-2 w-full sm:w-[180px]">
+          <div className="space-y-2 w-full md:w-[180px]">
             <Label htmlFor="role">Role</Label>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger id="role">
+              <SelectTrigger id="role" className="w-full">
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
@@ -227,7 +228,7 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
           </div>
         </div>
         {hasActiveFilters && (
-          <Button variant="ghost" onClick={clearFilters} size="sm" className="self-end">
+          <Button variant="ghost" onClick={clearFilters} size="sm" className="w-full md:w-auto">
             Clear filters
           </Button>
         )}
@@ -249,7 +250,8 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
         </div>
       ) : (
         <>
-          <div className="rounded-md border overflow-x-auto">
+          <ResponsiveTable>
+            <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -357,6 +359,7 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
                         setViewDialogOpen(true);
                       }}
                       aria-label="View user details"
+                      className="min-h-[44px] min-w-[44px]"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -368,6 +371,7 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
                         setEditDialogOpen(true);
                       }}
                       aria-label="Edit user"
+                      className="min-h-[44px] min-w-[44px]"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -379,6 +383,7 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
                         setDeleteDialogOpen(true);
                       }}
                       aria-label="Delete user"
+                      className="min-h-[44px] min-w-[44px]"
                     >
                       <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
@@ -389,6 +394,7 @@ function UsersTable({ users, onRefresh }: { users: Profile[]; onRefresh: () => v
           </TableBody>
         </Table>
       </div>
+      </ResponsiveTable>
 
       <TablePagination
         currentPage={currentPage}
@@ -470,14 +476,14 @@ export default function UsersPage() {
           <CreateUserDialog />
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="p-4 md:py-6">
+          <CardHeader className="px-0">
             <CardTitle>All Users</CardTitle>
             <CardDescription>
               Manage your system users
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0">
             {isLoading ? (
               <TableSkeleton columns={4} rows={10} />
             ) : (

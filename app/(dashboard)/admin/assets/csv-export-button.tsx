@@ -56,7 +56,7 @@ export function CsvExportButton({ assets }: { assets: Asset[] }) {
   };
 
   return (
-    <Button variant="outline" onClick={exportToCSV}>
+    <Button variant="outline" onClick={exportToCSV} className="min-h-[44px] min-w-[44px]">
       <FileDown className="mr-2 h-4 w-4" />
       Export CSV
     </Button>

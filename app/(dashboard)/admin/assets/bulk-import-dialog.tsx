@@ -225,7 +225,7 @@ export function BulkImportDialog({ onSuccess }: { onSuccess: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="min-h-[44px] min-w-[44px]">
           <Upload className="mr-2 h-4 w-4" />
           Bulk Import
         </Button>
@@ -247,7 +247,7 @@ export function BulkImportDialog({ onSuccess }: { onSuccess: () => void }) {
                 Get a sample CSV file with the correct format
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={downloadTemplate}>
+            <Button variant="outline" size="sm" onClick={downloadTemplate} className="min-h-[44px]">
               <Download className="mr-2 h-4 w-4" />
               Template
             </Button>
@@ -333,6 +333,7 @@ export function BulkImportDialog({ onSuccess }: { onSuccess: () => void }) {
             variant="outline"
             onClick={handleClose}
             disabled={isImporting}
+            className="min-h-[44px]"
           >
             {summary ? 'Close' : 'Cancel'}
           </Button>
@@ -341,6 +342,7 @@ export function BulkImportDialog({ onSuccess }: { onSuccess: () => void }) {
               type="button"
               onClick={handleImport}
               disabled={!file || isImporting}
+              className="min-h-[44px]"
             >
               {isImporting ? 'Importing...' : 'Import Assets'}
             </Button>

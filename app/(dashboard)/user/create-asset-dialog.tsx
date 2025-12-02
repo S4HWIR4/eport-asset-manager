@@ -163,7 +163,7 @@ export function CreateAssetDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create Asset</Button>
+        <Button className="min-h-[44px] min-w-[44px]">Create Asset</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
@@ -173,7 +173,7 @@ export function CreateAssetDialog() {
               Add a new asset to track in your inventory.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
+          <div className="py-4 space-y-4 md:space-y-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">
                 Asset Name <span className="text-red-500">*</span>
@@ -288,16 +288,17 @@ export function CreateAssetDialog() {
               )}
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
+              className="w-full min-h-[44px] sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || isLoadingData}>
+            <Button type="submit" disabled={isSubmitting || isLoadingData} className="w-full min-h-[44px] sm:w-auto">
               {isSubmitting ? 'Creating...' : 'Create Asset'}
             </Button>
           </DialogFooter>

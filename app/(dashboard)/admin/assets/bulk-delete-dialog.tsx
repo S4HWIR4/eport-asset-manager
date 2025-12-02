@@ -123,7 +123,7 @@ export function BulkDeleteDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button variant="destructive" size="sm" className="min-h-[44px] min-w-[44px]">
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Selected ({selectedAssets.length})
         </Button>
@@ -215,6 +215,7 @@ export function BulkDeleteDialog({
             variant="outline"
             onClick={handleClose}
             disabled={isDeleting}
+            className="min-h-[44px]"
           >
             {summary ? 'Close' : 'Cancel'}
           </Button>
@@ -224,6 +225,7 @@ export function BulkDeleteDialog({
               variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
+              className="min-h-[44px]"
             >
               {isDeleting ? 'Deleting...' : `Delete ${selectedAssets.length} Asset(s)`}
             </Button>

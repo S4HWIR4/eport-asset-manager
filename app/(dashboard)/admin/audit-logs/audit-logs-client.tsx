@@ -9,6 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  ResponsiveTable,
 } from '@/components/ui/table';
 import {
   Select,
@@ -28,6 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
+import { MobileFilterPanel } from '@/components/ui/mobile-filter-panel';
 import { getAuditLogs } from '@/app/actions/audit-logs';
 import type { AuditLogWithPerformer } from '@/app/actions/audit-logs';
 import { Eye, AlertCircle } from 'lucide-react';
@@ -97,7 +99,7 @@ function ViewDetailsDialog({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Action</p>
               <Badge className={ACTION_COLORS[log.action] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}>
@@ -110,11 +112,11 @@ function ViewDetailsDialog({
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Performed By</p>
-              <p className="text-sm">
+              <p className="text-sm break-words">
                 {log.performer?.full_name || log.performer?.email || 'Unknown'}
               </p>
               {log.performer?.email && log.performer?.full_name && (
-                <p className="text-xs text-muted-foreground">{log.performer.email}</p>
+                <p className="text-xs text-muted-foreground break-words">{log.performer.email}</p>
               )}
             </div>
             <div>
@@ -123,9 +125,9 @@ function ViewDetailsDialog({
                 {format(new Date(log.created_at), 'PPpp')}
               </p>
             </div>
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <p className="text-sm font-medium text-muted-foreground">Entity ID</p>
-              <p className="text-xs font-mono bg-muted p-2 rounded">
+              <p className="text-xs font-mono bg-muted p-2 rounded break-all">
                 {log.entity_id}
               </p>
             </div>
@@ -137,7 +139,7 @@ function ViewDetailsDialog({
                 Entity Data
               </p>
               <div className="bg-muted p-4 rounded-md border">
-                <pre className="text-xs overflow-auto max-h-96">
+                <pre className="text-xs overflow-auto max-h-96 break-words whitespace-pre-wrap">
                   {JSON.stringify(log.entity_data, null, 2)}
                 </pre>
               </div>
@@ -255,190 +257,187 @@ export function AuditLogsClient({
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="bg-white dark:bg-card p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Filters</h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="user-filter">User</Label>
-            <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger id="user-filter">
-                <SelectValue placeholder="All Users" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Users</SelectItem>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.full_name || user.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="action-filter">Action</Label>
-            <Select value={selectedAction} onValueChange={setSelectedAction}>
-              <SelectTrigger id="action-filter">
-                <SelectValue placeholder="All Actions" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                <SelectItem value="asset_created">Asset Created</SelectItem>
-                <SelectItem value="asset_updated">Asset Updated</SelectItem>
-                <SelectItem value="asset_deleted">Asset Deleted</SelectItem>
-                <SelectItem value="user_created">User Created</SelectItem>
-                <SelectItem value="user_updated">User Updated</SelectItem>
-                <SelectItem value="category_created">Category Created</SelectItem>
-                <SelectItem value="category_updated">Category Updated</SelectItem>
-                <SelectItem value="category_deleted">Category Deleted</SelectItem>
-                <SelectItem value="department_created">Department Created</SelectItem>
-                <SelectItem value="department_updated">Department Updated</SelectItem>
-                <SelectItem value="department_deleted">Department Deleted</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="entity-filter">Entity Type</Label>
-            <Select value={selectedEntityType} onValueChange={setSelectedEntityType}>
-              <SelectTrigger id="entity-filter">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="asset">Asset</SelectItem>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-                <SelectItem value="department">Department</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="start-date">Start Date</Label>
-            <DatePicker
-              date={startDate}
-              onDateChange={setStartDate}
-              placeholder="Select start date"
-              maxDate={endDate || new Date()}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="end-date">End Date</Label>
-            <DatePicker
-              date={endDate}
-              onDateChange={setEndDate}
-              placeholder="Select end date"
-              minDate={startDate}
-              maxDate={new Date()}
-            />
-          </div>
+      <MobileFilterPanel
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearFilters}
+        collapsible={true}
+        defaultCollapsed={false}
+      >
+        <div className="space-y-2 w-full">
+          <Label htmlFor="user-filter">User</Label>
+          <Select value={selectedUser} onValueChange={setSelectedUser}>
+            <SelectTrigger id="user-filter" className="w-full">
+              <SelectValue placeholder="All Users" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Users</SelectItem>
+              {users.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.full_name || user.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {hasActiveFilters && (
-          <div className="flex justify-end">
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              Clear filters
-            </Button>
-          </div>
-        )}
-      </div>
+        <div className="space-y-2 w-full">
+          <Label htmlFor="action-filter">Action</Label>
+          <Select value={selectedAction} onValueChange={setSelectedAction}>
+            <SelectTrigger id="action-filter" className="w-full">
+              <SelectValue placeholder="All Actions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Actions</SelectItem>
+              <SelectItem value="asset_created">Asset Created</SelectItem>
+              <SelectItem value="asset_updated">Asset Updated</SelectItem>
+              <SelectItem value="asset_deleted">Asset Deleted</SelectItem>
+              <SelectItem value="user_created">User Created</SelectItem>
+              <SelectItem value="user_updated">User Updated</SelectItem>
+              <SelectItem value="category_created">Category Created</SelectItem>
+              <SelectItem value="category_updated">Category Updated</SelectItem>
+              <SelectItem value="category_deleted">Category Deleted</SelectItem>
+              <SelectItem value="department_created">Department Created</SelectItem>
+              <SelectItem value="department_updated">Department Updated</SelectItem>
+              <SelectItem value="department_deleted">Department Deleted</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2 w-full">
+          <Label htmlFor="entity-filter">Entity Type</Label>
+          <Select value={selectedEntityType} onValueChange={setSelectedEntityType}>
+            <SelectTrigger id="entity-filter" className="w-full">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="asset">Asset</SelectItem>
+              <SelectItem value="user">User</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+              <SelectItem value="department">Department</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2 w-full">
+          <Label htmlFor="start-date">Start Date</Label>
+          <DatePicker
+            date={startDate}
+            onDateChange={setStartDate}
+            placeholder="Select start date"
+            maxDate={endDate || new Date()}
+          />
+        </div>
+
+        <div className="space-y-2 w-full">
+          <Label htmlFor="end-date">End Date</Label>
+          <DatePicker
+            date={endDate}
+            onDateChange={setEndDate}
+            placeholder="Select end date"
+            minDate={startDate}
+            maxDate={new Date()}
+          />
+        </div>
+      </MobileFilterPanel>
 
       {/* Table */}
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Action</TableHead>
-              <TableHead>Entity Type</TableHead>
-              <TableHead>Performed By</TableHead>
-              <TableHead>Date & Time</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <ResponsiveTable>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                </TableCell>
+                <TableHead>Action</TableHead>
+                <TableHead>Entity Type</TableHead>
+                <TableHead>Performed By</TableHead>
+                <TableHead>Date & Time</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : logs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    No audit logs found. {hasActiveFilters && 'Try adjusting your filters.'}
-                  </p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              logs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell>
-                    <Badge className={ACTION_COLORS[log.action] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}>
-                      {ACTION_LABELS[log.action] || log.action}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="capitalize">{log.entity_type}</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {log.performer?.full_name || log.performer?.email || 'Unknown'}
-                      </p>
-                      {log.performer?.email && log.performer?.full_name && (
-                        <p className="text-xs text-muted-foreground">
-                          {log.performer.email}
-                        </p>
-                      )}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm">
-                        {format(new Date(log.created_at), 'PP')}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(log.created_at), 'p')}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewClick(log)}
-                      aria-label="View details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : logs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      No audit logs found. {hasActiveFilters && 'Try adjusting your filters.'}
+                    </p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell>
+                      <Badge className={ACTION_COLORS[log.action] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}>
+                        {ACTION_LABELS[log.action] || log.action}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="capitalize">{log.entity_type}</TableCell>
+                    <TableCell>
+                      <div className="max-w-[200px]">
+                        <p className="text-sm font-medium truncate">
+                          {log.performer?.full_name || log.performer?.email || 'Unknown'}
+                        </p>
+                        {log.performer?.email && log.performer?.full_name && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {log.performer.email}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="whitespace-nowrap">
+                        <p className="text-sm">
+                          {format(new Date(log.created_at), 'PP')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(log.created_at), 'p')}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewClick(log)}
+                        aria-label="View details"
+                        className="min-h-[44px] min-w-[44px]"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </ResponsiveTable>
       </div>
 
       {/* Pagination */}
       {total > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground text-center sm:text-left">
             Showing {start}-{end} of {total} records
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage(page - 1)}
               disabled={page === 1 || isLoading}
+              className="min-h-[44px] min-w-[44px]"
             >
               Previous
             </Button>
-            <span className="text-sm">
+            <span className="text-sm whitespace-nowrap px-2">
               Page {page} of {totalPages}
             </span>
             <Button
@@ -446,6 +445,7 @@ export function AuditLogsClient({
               size="sm"
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages || isLoading}
+              className="min-h-[44px] min-w-[44px]"
             >
               Next
             </Button>

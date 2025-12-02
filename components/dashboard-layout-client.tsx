@@ -65,12 +65,16 @@ export function DashboardLayoutClient({
       <main
         className={cn(
           'flex-1 overflow-y-auto bg-gray-50 dark:bg-background transition-all duration-300',
-          isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+          // Desktop: account for sidebar width
+          isCollapsed ? 'lg:ml-20' : 'lg:ml-64',
+          // Mobile: full width, account for fixed header with padding
+          'w-full pt-14 lg:pt-0'
         )}
       >
-        {/* Mobile top padding to account for mobile header */}
-        <div className="lg:hidden h-14" />
-        {children}
+        {/* Content wrapper with proper mobile spacing */}
+        <div className="min-h-full">
+          {children}
+        </div>
       </main>
     </div>
   );
