@@ -29,7 +29,7 @@ Try it now! Login and explore the full feature set with pre-populated demo data.
 - **UI**: shadcn/ui components, Tailwind CSS 4
 - **Backend**: Supabase (PostgreSQL + Auth)
 - **Testing**: Vitest with Property-Based Testing (fast-check)
-- **Deployment**: Vercel-ready
+- **Deployment**: Vercel-ready -
 
 ## Prerequisites
 
