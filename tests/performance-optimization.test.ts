@@ -169,8 +169,8 @@ describe('Performance Optimization', () => {
 
       // Simulate frames
       for (let i = 0; i < 10; i++) {
-        if (rafCallback) {
-          rafCallback(performance.now());
+        if (rafCallback !== null) {
+          (rafCallback as (time: number) => void)(performance.now());
         }
       }
 
