@@ -224,6 +224,22 @@ export class WarrantyApiClient {
     return this.makeRequest(this.endpoints.check(assetId));
   }
 
+  /**
+   * Get all warranty registrations
+   */
+  async getWarrantyRegistrations(): Promise<Array<{
+    id: number;
+    asset_id: string;
+    asset_name: string;
+    user_email: string;
+    user_name?: string;
+    registration_date: string;
+    status: string;
+    warranty_period_months: number;
+    notes?: string;
+  }>> {
+    return this.makeRequest(this.endpoints.registrations);
+  }
 
 }
 

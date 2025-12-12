@@ -231,44 +231,34 @@ describe('WarrantyApiClient', () => {
       });
     });
 
-    describe('login', () => {
-      it('should login successfully and store token', async () => {
-        const mockResponse = {
-          user: { id: 1, username: 'testuser' },
-          token: 'auth-token-123',
-        };
-
+    describe('testConnection', () => {
+      it('should test connection successfully', async () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
-          json: async () => mockResponse,
+          json: async () => ({ status: 'healthy' }),
         });
 
-        const result = await client.login('testuser', 'password');
-        expect(result).toEqual(mockResponse);
-        expect(client.getAuthToken()).toBe('auth-token-123');
+        const result = await client.testConnection();
+        expect(result).toBe(true);
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining('/health'),
+          expect.any(Object)
+        );
       });
 
-      it('should login successfully without token', async () => {
-        const mockResponse = {
-          user: { id: 1, username: 'testuser' },
-        };
+      it('should handle connection test failure', async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Connection failed'));
 
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockResponse,
-        });
-
-        const result = await client.login('testuser', 'password');
-        expect(result).toEqual(mockResponse);
-        expect(client.getAuthToken()).toBeNull();
+        const result = await client.testConnection();
+        expect(result).toBe(false);
       });
     });
 
-    describe('logout', () => {
-      it('should clear auth token on logout', () => {
-        client.setAuthToken('test-token');
-        client.logout();
-        expect(client.getAuthToken()).toBeNull();
+    describe('testConnectionStrict', () => {
+      it('should test connection strictly and throw on failure', async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Connection failed'));
+
+        await expect(client.testConnectionStrict()).rejects.toThrow();
       });
     });
   });

@@ -34,14 +34,14 @@ async function testApiClient() {
       console.log('   🔍 Error:', (error as Error).message);
     }
 
-    // Test 3: Test authentication (should fail without credentials)
-    console.log('\n3. Testing Authentication:');
+    // Test 3: Test warranty registrations (may fail without proper backend)
+    console.log('\n3. Testing Warranty Registrations:');
     try {
-      const loginResult = await client.login('test-user', 'test-password');
-      console.log('   ⚠️  Login succeeded unexpectedly');
-      console.log('   📊 Response:', JSON.stringify(loginResult, null, 2));
+      const registrations = await client.getWarrantyRegistrations();
+      console.log('   ✅ Warranty registrations fetch: SUCCESS');
+      console.log('   📊 Response:', JSON.stringify(registrations, null, 2));
     } catch (error) {
-      console.log('   ✅ Login failed as expected (no valid credentials)');
+      console.log('   ⚠️  Warranty registrations failed (expected without backend)');
       console.log('   🔍 Error:', (error as Error).message);
     }
 

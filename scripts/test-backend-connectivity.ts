@@ -146,7 +146,7 @@ async function testApiEndpoints(): Promise<TestResult[]> {
 
   // Test warranty list endpoint (may require auth, expect 401/403)
   try {
-    const response = await fetch(endpoints.list, {
+    const response = await fetch(endpoints.registrations, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(30000),

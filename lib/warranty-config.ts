@@ -69,6 +69,7 @@ export function getApiEndpoints() {
   return {
     register: `${baseUrl}/api/warranty/register`,
     check: (assetId: string) => `${baseUrl}/api/warranty/check/${assetId}`,
+    registrations: `${baseUrl}/api/warranty/registrations`,
     health: `${baseUrl}/health`,
   };
 }
