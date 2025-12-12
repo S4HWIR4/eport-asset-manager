@@ -146,3 +146,51 @@ export async function checkWarrantyStatus(
   }
 }
 
+/**
+ * Get all warranty registrations
+ */
+export async function getWarrantyRegistrations(): Promise<ActionResult<WarrantyRegistration[]>> {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required',
+        },
+      };
+    }
+
+    // Use centralized API client
+    const apiClient = getWarrantyApiClient();
+    const result = await apiClient.getWarrantyRegistrations();
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Warranty registrations fetch error:', error);
+    
+    if (error instanceof WarrantyApiError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: 'UNKNOWN_ERROR',
+        message: 'An unexpected error occurred',
+      },
+    };
+  }
+}
+

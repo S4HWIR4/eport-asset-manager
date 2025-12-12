@@ -206,10 +206,10 @@ export function AssetsTableClient({
   // Batch check warranty status for all assets on load
   useEffect(() => {
     const checkAllWarrantyStatuses = async () => {
-      // This will trigger the warranty status badges to check their status
-      // The individual badges will handle their own caching and loading states
+      // Individual warranty status badges will fetch their own fresh data
+      // We just need to ensure registrations are available for context
       try {
-        await fetchRegistrations(false); // Use cache if available
+        await fetchRegistrations(true); // Always fetch fresh registrations
       } catch (error) {
         console.error('Failed to fetch warranty registrations:', error);
       }

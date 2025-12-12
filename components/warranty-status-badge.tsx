@@ -142,18 +142,16 @@ export function WarrantyStatusBadge({
     fetchStatusWithFeedback(true);
   };
 
-  // Initial load with staggered delay to prevent API overload
+  // Always fetch fresh data on mount - no caching for live warranty status
   useEffect(() => {
-    if (!status) {
-      // Add a small random delay to stagger requests
-      const delay = Math.random() * 1000; // 0-1 second delay
-      const timer = setTimeout(() => {
-        fetchStatusWithFeedback(true);
-      }, delay);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [assetId]);
+    // Add a small random delay to stagger requests and prevent API overload
+    const delay = Math.random() * 300; // 0-300ms delay (reduced from 1000ms)
+    const timer = setTimeout(() => {
+      fetchStatusWithFeedback(true);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [assetId]); // Always fetch when assetId changes
 
   // Auto-refresh setup
   useEffect(() => {
@@ -184,7 +182,8 @@ export function WarrantyStatusBadge({
     ? calculateWarrantyExpiration(status.registration_date, 12) // Default to 12 months
     : null;
 
-  if (loading && !status) {
+  // Show loading state while checking or if no status yet
+  if (loading || (!status && !error)) {
     return (
       <Badge variant="outline" className={`${className} animate-pulse`}>
         <Loader2 className="w-3 h-3 mr-1 animate-spin" />

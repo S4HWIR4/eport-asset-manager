@@ -65,7 +65,7 @@ export interface WarrantyState {
 
 const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes (reduced from 5 minutes)
 const REGISTRATION_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (reduced from 10 minutes)
-const CACHE_VERSION = '1.1'; // Increment this to invalidate all cached data
+const CACHE_VERSION = '1.4'; // Increment this to invalidate all cached data
 
 export const useWarrantyStore = create<WarrantyState>()(
   persist(
@@ -338,12 +338,12 @@ export const useWarrantyStore = create<WarrantyState>()(
       name: 'warranty-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Only persist cache data, not loading states
+        // Only persist registrations cache, NOT asset status cache for live data
         cacheVersion: state.cacheVersion,
         registrations: state.registrations,
-        assetStatuses: state.assetStatuses,
-        assetStatusTimestamps: state.assetStatusTimestamps,
         lastRegistrationsFetch: state.lastRegistrationsFetch,
+        // Exclude assetStatuses and assetStatusTimestamps from persistence
+        // This ensures warranty status is always fetched fresh
       }),
       // Check cache version and clear if outdated
       onRehydrateStorage: () => (state) => {
@@ -351,10 +351,13 @@ export const useWarrantyStore = create<WarrantyState>()(
           console.log('Warranty cache version mismatch, clearing cache');
           // Clear the cache by resetting to initial state
           state.registrations = {};
-          state.assetStatuses = {};
-          state.assetStatusTimestamps = {};
           state.lastRegistrationsFetch = undefined;
           state.cacheVersion = CACHE_VERSION;
+        }
+        // Always start with empty asset status cache for fresh data
+        if (state) {
+          state.assetStatuses = {};
+          state.assetStatusTimestamps = {};
         }
       },
     }
@@ -375,6 +378,7 @@ export const useWarrantyRegistrations = () => {
     store.setRegistrationsLoading(true);
     
     try {
+      // Use direct API client for faster response times
       const apiClient = getWarrantyApiClient();
       const registrations = await apiClient.getWarrantyRegistrations();
       store.setRegistrations(registrations);
@@ -404,14 +408,17 @@ export const useWarrantyRegistrations = () => {
 export const useAssetWarrantyStatus = (assetId: string) => {
   const store = useWarrantyStore();
   
-  const fetchStatus = async (force = false) => {
-    if (!force && store.isAssetStatusCacheValid(assetId)) {
+  const fetchStatus = async (force = true) => {
+    // ALWAYS fetch fresh data - no caching for warranty status to ensure live data
+    // Only skip if currently loading to prevent duplicate requests
+    if (store.loadingAssetStatus[assetId] && !force) {
       return store.assetStatuses[assetId];
     }
     
     store.setAssetStatusLoading(assetId, true);
     
     try {
+      // Use direct API client for faster response times
       const apiClient = getWarrantyApiClient();
       const result = await apiClient.checkWarrantyStatus(assetId);
       
