@@ -38,6 +38,8 @@ import { DeletionRequestBadge } from '@/components/deletion-request-badge';
 import { DeletionRequestStatus } from './deletion-request-status';
 import { AssetAuditHistory } from '../admin/assets/asset-audit-history';
 import { getDeletionRequestForAsset } from '@/app/actions/deletion-requests';
+import { WarrantyRegistrationButton } from '@/components/warranty-registration-button';
+import { WarrantyStatusBadge } from '@/components/warranty-status-badge';
 import type { Asset, DeletionRequest } from '@/types/database';
 
 function ViewAssetDialog({
@@ -46,12 +48,14 @@ function ViewAssetDialog({
   onOpenChange,
   deletionRequest,
   onCancelRequest,
+  currentUser,
 }: {
   asset: Asset;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   deletionRequest?: DeletionRequest | null;
   onCancelRequest?: () => void;
+  currentUser?: { id: string; email: string; full_name?: string };
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -104,6 +108,36 @@ function ViewAssetDialog({
             </div>
           </div>
 
+          {/* Warranty Management Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Warranty Management</h3>
+            <div className="space-y-3">
+              {/* Warranty Status */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Current Status</p>
+                <WarrantyStatusBadge 
+                  assetId={asset.id} 
+                  showDetails={true}
+                  autoRefresh={true}
+                />
+              </div>
+              
+              {/* Warranty Registration */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Registration</p>
+                <div className="flex items-center gap-2">
+                  {currentUser && (
+                    <WarrantyRegistrationButton
+                      asset={asset}
+                      currentUserEmail={currentUser.email}
+                      currentUserName={currentUser.full_name}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {deletionRequest && (
             <div className="border-t pt-4">
               <DeletionRequestStatus 
@@ -134,9 +168,11 @@ function ViewAssetDialog({
 }
 
 export function AssetsTableClient({ 
-  assets: initialAssets
+  assets: initialAssets,
+  currentUser
 }: { 
   assets: Asset[];
+  currentUser?: { id: string; email: string; full_name?: string };
 }) {
   const [assets, setAssets] = useState(initialAssets);
   const [deletionRequests, setDeletionRequests] = useState<Record<string, DeletionRequest>>({});
@@ -475,6 +511,7 @@ export function AssetsTableClient({
                       </div>
                     </TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Warranty</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -504,6 +541,12 @@ export function AssetsTableClient({
                             <span className="text-sm">Active</span>
                           </div>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <WarrantyStatusBadge 
+                          assetId={asset.id} 
+                          className="max-w-[200px]"
+                        />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -563,6 +606,7 @@ export function AssetsTableClient({
             onOpenChange={setViewDialogOpen}
             deletionRequest={deletionRequests[selectedAsset.id]}
             onCancelRequest={handleCancelRequestSuccess}
+            currentUser={currentUser}
           />
           <EditAssetDialog
             asset={selectedAsset}

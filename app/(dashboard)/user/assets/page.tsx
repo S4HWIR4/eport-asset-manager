@@ -51,7 +51,7 @@ export default async function UserAssetsPage() {
         
         <Card>
           <CardContent className="pt-6">
-            <AssetsTableClient assets={result.data} />
+            <AssetsTableClient assets={result.data} currentUser={user} />
           </CardContent>
         </Card>
       </div>
