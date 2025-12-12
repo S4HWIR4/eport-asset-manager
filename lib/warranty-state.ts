@@ -174,23 +174,37 @@ export const useWarrantyStore = create<WarrantyState>()(
       
       // Asset status management
       setAssetStatus: (assetId, status) => {
-        set((state) => ({
-          assetStatuses: {
-            ...state.assetStatuses,
-            [assetId]: {
-              ...status,
-              last_updated: new Date().toISOString(),
+        set((state) => {
+          // Check if the status has actually changed to prevent unnecessary updates
+          const currentStatus = state.assetStatuses[assetId];
+          const newStatus = {
+            ...status,
+            last_updated: new Date().toISOString(),
+          };
+          
+          // Only update if the status has actually changed
+          if (currentStatus && 
+              currentStatus.registered === newStatus.registered &&
+              currentStatus.warranty_id === newStatus.warranty_id &&
+              currentStatus.status === newStatus.status) {
+            return state; // No change, return current state
+          }
+          
+          return {
+            assetStatuses: {
+              ...state.assetStatuses,
+              [assetId]: newStatus,
             },
-          },
-          assetStatusTimestamps: {
-            ...state.assetStatusTimestamps,
-            [assetId]: Date.now(),
-          },
-          statusErrors: {
-            ...state.statusErrors,
-            [assetId]: '',
-          },
-        }));
+            assetStatusTimestamps: {
+              ...state.assetStatusTimestamps,
+              [assetId]: Date.now(),
+            },
+            statusErrors: {
+              ...state.statusErrors,
+              [assetId]: '',
+            },
+          };
+        });
       },
       
       setAssetStatusLoading: (assetId, loading) => {
@@ -415,6 +429,12 @@ export const useAssetWarrantyStatus = (assetId: string) => {
       return store.assetStatuses[assetId];
     }
     
+    // Prevent duplicate requests by checking if already loading
+    if (store.loadingAssetStatus[assetId]) {
+      console.log(`[WarrantyState] Already loading status for asset ${assetId}, skipping duplicate request`);
+      return store.assetStatuses[assetId];
+    }
+    
     store.setAssetStatusLoading(assetId, true);
     
     try {
@@ -432,9 +452,17 @@ export const useAssetWarrantyStatus = (assetId: string) => {
       store.setAssetStatus(assetId, statusData);
       return statusData;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Handle specific error types more gracefully
+      if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+        errorMessage = 'Connection timeout - service may be temporarily unavailable';
+      } else if (errorMessage.includes('Failed to fetch')) {
+        errorMessage = 'Network error - please check your connection';
+      }
+      
       store.setAssetStatusError(assetId, errorMessage);
-      throw error;
+      throw new Error(errorMessage);
     } finally {
       store.setAssetStatusLoading(assetId, false);
     }

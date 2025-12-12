@@ -52,7 +52,30 @@ export function WarrantyRegistrationButton({
   
   // Use warranty state management
   const { status: warrantyStatus, loading: isCheckingStatus, fetchStatus } = useAssetWarrantyStatus(asset.id);
-  const { addRegistration, optimisticRegisterAsset, revertOptimisticUpdate } = useWarrantyStore();
+  const { addRegistration, optimisticRegisterAsset, revertOptimisticUpdate, registrations } = useWarrantyStore();
+  
+  // Check if asset is already registered in our local state (fallback check)
+  const isRegisteredInState = Object.values(registrations).some(reg => reg.asset_id === asset.id);
+  
+  // Simple registration check - only use API status and local state
+  const isAssetRegistered = () => {
+    // Check API status first
+    if (warrantyStatus?.registered === true) {
+      return true;
+    }
+    
+    // Check local state
+    if (isRegisteredInState) {
+      return true;
+    }
+    
+    // Check if warranty status indicates active warranty (even if registered field is missing)
+    if (warrantyStatus?.status === 'active' || warrantyStatus?.warranty_id) {
+      return true;
+    }
+    
+    return false;
+  };
 
   // Network status monitoring
   useEffect(() => {
@@ -67,6 +90,18 @@ export function WarrantyRegistrationButton({
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Only fetch status if we don't have it yet
+  useEffect(() => {
+    // Only fetch if we don't have status yet and not currently loading
+    if (!warrantyStatus && !isCheckingStatus) {
+      const timer = setTimeout(() => {
+        fetchStatus(true);
+      }, 1500); // Longer delay to let status badge load first
+      
+      return () => clearTimeout(timer);
+    }
+  }, [asset.id, warrantyStatus, isCheckingStatus, fetchStatus]);
 
   // Enhanced form validation
   const validateForm = (): boolean => {
@@ -163,6 +198,15 @@ export function WarrantyRegistrationButton({
   };
 
   const handleRegister = async () => {
+    // Check if asset is already registered (double-check before submission)
+    if (isAssetRegistered()) {
+      toast.error('Already registered', {
+        description: 'This asset already has an active warranty registration.',
+      });
+      setIsOpen(false);
+      return;
+    }
+    
     // Validate form before submission
     if (!validateForm()) {
       toast.error('Invalid form', {
@@ -191,7 +235,7 @@ export function WarrantyRegistrationButton({
         optimisticRegisterAsset(asset.id, asset.name);
         
         // Show processing notification
-        const processingToast = toast.loading('Processing warranty registration...', {
+        toast.loading('Processing warranty registration...', {
           description: 'Please wait while we complete your request.',
         });
         
@@ -295,6 +339,14 @@ export function WarrantyRegistrationButton({
 
   // Handle dialog open/close with status checking
   const handleOpenChange = (open: boolean) => {
+    // Prevent opening if already registered
+    if (open && isAssetRegistered()) {
+      toast.info('Already registered', {
+        description: 'This asset already has an active warranty registration.',
+      });
+      return;
+    }
+    
     setIsOpen(open);
     if (open) {
       checkStatus();
@@ -331,15 +383,28 @@ export function WarrantyRegistrationButton({
     checkStatus(true);
   };
 
-  // Show warranty registered badge if already registered
-  if (warrantyStatus?.registered) {
+  // Show loading state if we don't have status yet or still checking
+  if (isCheckingStatus || (!warrantyStatus && !isRegisteredInState)) {
+    return (
+      <Button variant="outline" size="sm" disabled className="gap-2">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Checking Status...
+      </Button>
+    );
+  }
+
+  // Show warranty registered badge if already registered (comprehensive check)
+  if (isAssetRegistered()) {
+    const registrationFromState = Object.values(registrations).find(reg => reg.asset_id === asset.id);
+    const warrantyId = warrantyStatus?.warranty_id || registrationFromState?.id;
+    
     return (
       <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
         <CheckCircle className="w-3 h-3 mr-1" />
         Warranty Registered
-        {warrantyStatus.warranty_id && (
+        {warrantyId && (
           <span className="ml-1 text-xs opacity-75">
-            (ID: {warrantyStatus.warranty_id})
+            (ID: {warrantyId})
           </span>
         )}
       </Badge>

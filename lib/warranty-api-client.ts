@@ -73,7 +73,7 @@ export class WarrantyApiClient {
     return {
       ...options,
       headers,
-      signal: AbortSignal.timeout(this.config.timeout),
+      // Don't set signal here - it will be handled in makeRequest
     };
   }
 
@@ -87,7 +87,7 @@ export class WarrantyApiClient {
   }
 
   /**
-   * Make HTTP request with retry logic and error handling
+   * Make HTTP request with optimized retry logic and faster failure detection
    */
   private async makeRequest<T>(
     url: string,
@@ -98,9 +98,37 @@ export class WarrantyApiClient {
 
     this.debugLog(`Making request to ${url}`, { method: options.method || 'GET' });
 
-    for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
+    // Reduced retry attempts for faster failure detection
+    const maxAttempts = Math.min(this.config.retryAttempts, 2);
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      let controller: AbortController | null = null;
+      let timeoutId: NodeJS.Timeout | null = null;
+      
       try {
-        response = await fetch(url, this.createFetchConfig(options));
+        // Create a shorter timeout for individual requests
+        const requestTimeout = Math.min(this.config.timeout, 3000); // Max 3 seconds per request
+        controller = new AbortController();
+        
+        // Set up timeout with proper cleanup
+        timeoutId = setTimeout(() => {
+          if (controller) {
+            controller.abort();
+          }
+        }, requestTimeout);
+
+        const fetchOptions = {
+          ...this.createFetchConfig(options),
+          signal: controller.signal,
+        };
+
+        response = await fetch(url, fetchOptions);
+        
+        // Clear timeout on successful response
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
         if (response.ok) {
           this.debugLog(`Request successful`, { url, attempt, status: response.status });
@@ -113,19 +141,39 @@ export class WarrantyApiClient {
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
+        // Clean up timeout if it exists
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        
         lastError = error as Error;
+        
+        // Handle specific abort errors more gracefully
+        if (lastError.name === 'AbortError' || lastError.message.includes('aborted')) {
+          lastError = new Error('Request timeout - service may be unavailable');
+        }
+        
         this.debugLog(`Request attempt failed`, { url, attempt, error: lastError.message });
 
-        if (attempt === this.config.retryAttempts) {
+        if (attempt === maxAttempts) {
+          // Provide more user-friendly error messages
+          let errorMessage = lastError.message;
+          if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+            errorMessage = 'Connection timeout - warranty service may be temporarily unavailable';
+          } else if (errorMessage.includes('Failed to fetch')) {
+            errorMessage = 'Network error - please check your internet connection';
+          }
+          
           throw new WarrantyApiError({
             code: 'NETWORK_ERROR',
-            message: `Failed to connect after ${this.config.retryAttempts} attempts: ${lastError.message}`,
+            message: `Failed to connect after ${maxAttempts} attempts: ${errorMessage}`,
             details: { url, attempts: attempt },
           });
         }
 
-        // Wait before retry (exponential backoff)
-        const delay = Math.pow(2, attempt - 1) * 1000;
+        // Shorter delay between retries (300ms instead of 500ms)
+        const delay = 300;
         this.debugLog(`Retrying in ${delay}ms`, { attempt, url });
         await new Promise(resolve => setTimeout(resolve, delay));
       }

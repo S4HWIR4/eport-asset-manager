@@ -47,3 +47,5 @@ sync_config.jsonc
 
 # Kiro IDE folder (contains documentation and specs)
 .kiro/
+.env.development
+.env.development

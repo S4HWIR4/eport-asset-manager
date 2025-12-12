@@ -40,7 +40,7 @@ import { AssetAuditHistory } from '../admin/assets/asset-audit-history';
 import { getDeletionRequestForAsset } from '@/app/actions/deletion-requests';
 import { WarrantyRegistrationButton } from '@/components/warranty-registration-button';
 import { WarrantyStatusBadge } from '@/components/warranty-status-badge';
-import { useWarrantyRegistrations } from '@/lib/warranty-state';
+// Removed complex warranty state management to prevent infinite loops
 import type { Asset, DeletionRequest } from '@/types/database';
 
 function ViewAssetDialog({
@@ -117,9 +117,11 @@ function ViewAssetDialog({
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">Current Status</p>
                 <WarrantyStatusBadge 
+                  key={`warranty-status-${asset.id}`}
                   assetId={asset.id} 
                   showDetails={true}
-                  autoRefresh={true}
+                  autoRefresh={false}
+                  refreshInterval={0}
                 />
               </div>
               
@@ -129,6 +131,7 @@ function ViewAssetDialog({
                 <div className="flex items-center gap-2">
                   {currentUser && (
                     <WarrantyRegistrationButton
+                      key={`warranty-reg-${asset.id}`}
                       asset={asset}
                       currentUserEmail={currentUser.email}
                       currentUserName={currentUser.full_name}
@@ -178,7 +181,6 @@ export function AssetsTableClient({
   const [assets, setAssets] = useState(initialAssets);
   const [deletionRequests, setDeletionRequests] = useState<Record<string, DeletionRequest>>({});
   const [loadingRequests, setLoadingRequests] = useState(true);
-  const { fetchRegistrations } = useWarrantyRegistrations();
 
   // Update assets when initialAssets changes (from server refresh)
   useEffect(() => {
@@ -203,22 +205,8 @@ export function AssetsTableClient({
     setAssets(initialAssets);
   }, [initialAssets]);
 
-  // Batch check warranty status for all assets on load
-  useEffect(() => {
-    const checkAllWarrantyStatuses = async () => {
-      // Individual warranty status badges will fetch their own fresh data
-      // We just need to ensure registrations are available for context
-      try {
-        await fetchRegistrations(true); // Always fetch fresh registrations
-      } catch (error) {
-        console.error('Failed to fetch warranty registrations:', error);
-      }
-    };
-
-    if (assets.length > 0) {
-      checkAllWarrantyStatuses();
-    }
-  }, [assets, fetchRegistrations]);
+  // Remove complex warranty batch checking - let individual badges handle their own fetching
+  // This prevents infinite loops and simplifies the state management
 
   // Fetch deletion requests for all assets
   useEffect(() => {

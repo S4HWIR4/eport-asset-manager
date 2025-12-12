@@ -16,9 +16,8 @@ import {
 } from 'lucide-react';
 
 import { toast } from 'sonner';
-import { useAssetWarrantyStatus } from '@/lib/warranty-state';
+import { getWarrantyApiClient } from '@/lib/warranty-api-client';
 import { calculateWarrantyExpiration, getExpirationColorTheme } from '@/lib/warranty-expiration';
-// import { WarrantyNotifications } from '@/lib/warranty-notifications';
 
 interface WarrantyStatusBadgeProps {
   assetId: string;
@@ -45,9 +44,16 @@ export function WarrantyStatusBadge({
   autoRefresh = false,
   refreshInterval = 300000, // 5 minutes default
 }: WarrantyStatusBadgeProps) {
-  // Use the warranty state management hook
-  const { status, loading, error, fetchStatus, clearCache } = useAssetWarrantyStatus(assetId);
+  // Simple local state - no complex state management
+  const [status, setStatus] = useState<WarrantyStatusData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  
+  // Circuit breaker state to prevent repeated failed requests
+  const [failureCount, setFailureCount] = useState(0);
+  const [lastFailureTime, setLastFailureTime] = useState<number | null>(null);
+  const [isCircuitOpen, setIsCircuitOpen] = useState(false);
 
   // Determine warranty status type with expiration calculation
   const getStatusType = (statusData: WarrantyStatusData | null): WarrantyStatusType => {
@@ -115,54 +121,155 @@ export function WarrantyStatusBadge({
     }
   };
 
-  // Enhanced fetch with state management
-  const fetchStatusWithFeedback = async (showLoadingState = true) => {
+  // Circuit breaker constants
+  const MAX_FAILURES = 3;
+  const CIRCUIT_RESET_TIME = 60000; // 1 minute
+  
+  // Check if circuit breaker should reset
+  const shouldResetCircuit = () => {
+    if (!lastFailureTime) return false;
+    return Date.now() - lastFailureTime > CIRCUIT_RESET_TIME;
+  };
+
+  // Simple fetch function with circuit breaker pattern and debouncing
+  const fetchWarrantyStatus = async (showToast = false) => {
+    if (loading) {
+      console.log(`[WarrantyStatusBadge] Already loading for asset ${assetId}, skipping duplicate request`);
+      return; // Prevent duplicate requests
+    }
+    
+    // Check circuit breaker
+    if (isCircuitOpen && !shouldResetCircuit()) {
+      console.log('Circuit breaker is open, skipping request');
+      setError('Service temporarily unavailable');
+      return;
+    }
+    
+    // Reset circuit breaker if enough time has passed
+    if (isCircuitOpen && shouldResetCircuit()) {
+      setIsCircuitOpen(false);
+      setFailureCount(0);
+      setLastFailureTime(null);
+    }
+    
+    setLoading(true);
+    setError(null);
+    
     try {
-      await fetchStatus(!showLoadingState); // force refresh if not showing loading
+      const apiClient = getWarrantyApiClient();
+      const result = await apiClient.checkWarrantyStatus(assetId);
+      
+      setStatus({
+        registered: result.registered,
+        warranty_id: result.warranty_id,
+        registration_date: result.registration_date,
+        status: result.status,
+      });
+      
       setLastUpdated(new Date());
+      
+      // Reset failure count on success
+      setFailureCount(0);
+      setLastFailureTime(null);
+      setIsCircuitOpen(false);
+      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      let errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      
+      // Handle specific error types more gracefully
+      if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+        errorMessage = 'Connection timeout - service may be temporarily unavailable';
+      } else if (errorMessage.includes('Failed to fetch')) {
+        errorMessage = 'Network error - please check your connection';
+      }
+      
       console.error('Warranty status check failed:', err);
       
-      if (showLoadingState) {
+      // Update circuit breaker state
+      const newFailureCount = failureCount + 1;
+      setFailureCount(newFailureCount);
+      setLastFailureTime(Date.now());
+      
+      if (newFailureCount >= MAX_FAILURES) {
+        setIsCircuitOpen(true);
+        setError('Service temporarily unavailable - too many failures');
+        
+        // Set a fallback status when circuit opens to prevent infinite loading
+        setStatus({
+          registered: false,
+          status: 'unknown',
+        });
+      } else {
+        setError(errorMessage);
+      }
+      
+      if (showToast && !isCircuitOpen) {
         toast.error('Service error', {
           description: errorMessage,
           action: {
             label: 'Retry',
-            onClick: () => handleRefresh(),
+            onClick: () => fetchWarrantyStatus(true),
           },
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   // Manual refresh
   const handleRefresh = () => {
-    clearCache(); // Clear cache to force fresh data
-    fetchStatusWithFeedback(true);
+    fetchWarrantyStatus(true);
   };
 
-  // Always fetch fresh data on mount - no caching for live warranty status
+  // Fetch on mount - simple and clean with circuit breaker awareness
   useEffect(() => {
+    // Skip initial fetch if circuit is open
+    if (isCircuitOpen && !shouldResetCircuit()) {
+      setError('Service temporarily unavailable');
+      return;
+    }
+    
     // Add a small random delay to stagger requests and prevent API overload
-    const delay = Math.random() * 300; // 0-300ms delay (reduced from 1000ms)
+    const delay = Math.random() * 500; // Increased to 500ms for better staggering
     const timer = setTimeout(() => {
-      fetchStatusWithFeedback(true);
+      fetchWarrantyStatus(false);
     }, delay);
     
-    return () => clearTimeout(timer);
-  }, [assetId]); // Always fetch when assetId changes
+    // Set a maximum loading timeout to prevent infinite loading states
+    const maxLoadingTimeout = setTimeout(() => {
+      if (loading && !status && !error) {
+        console.log(`[WarrantyStatusBadge] Loading timeout for asset ${assetId}, setting fallback status`);
+        setLoading(false);
+        setStatus({
+          registered: false,
+          status: 'unknown',
+        });
+        setError('Request timeout - please try refreshing');
+      }
+    }, 10000); // 10 second timeout
+    
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(maxLoadingTimeout);
+    };
+  }, [assetId]); // Only depend on assetId
 
-  // Auto-refresh setup
+  // Auto-refresh setup with circuit breaker awareness
   useEffect(() => {
     if (!autoRefresh || refreshInterval <= 0) return;
 
     const interval = setInterval(() => {
-      fetchStatusWithFeedback(false); // Silent refresh
+      // Skip auto-refresh if circuit is open and not ready to reset
+      if (isCircuitOpen && !shouldResetCircuit()) {
+        console.log('Skipping auto-refresh due to circuit breaker');
+        return;
+      }
+      fetchWarrantyStatus(false); // Silent refresh
     }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, assetId]);
+  }, [autoRefresh, refreshInterval, assetId, isCircuitOpen, lastFailureTime]); // Include circuit breaker state
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -176,6 +283,8 @@ export function WarrantyStatusBadge({
   const statusType = getStatusType(status);
   const config = getStatusConfig(statusType);
   const IconComponent = config.icon;
+
+
 
   // Get expiration info if available (use default 12 months if period not provided)
   const expirationInfo = status?.registration_date
@@ -193,18 +302,20 @@ export function WarrantyStatusBadge({
   }
 
   if (error && !status) {
+    const isServiceUnavailable = error.includes('Service temporarily unavailable');
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
           <XCircle className="w-3 h-3 mr-1" />
-          Check Failed
+          {isServiceUnavailable ? 'Service Unavailable' : 'Check Failed'}
         </Badge>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleRefresh}
-          disabled={loading}
+          disabled={loading || (isCircuitOpen && !shouldResetCircuit())}
           className="h-6 px-2"
+          title={isCircuitOpen ? 'Service temporarily unavailable' : 'Refresh warranty status'}
         >
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
         </Button>
@@ -296,6 +407,11 @@ export function WarrantyStatusBadge({
       {error && (
         <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
           Error: {error}
+          {isCircuitOpen && (
+            <div className="mt-1 text-xs text-red-500">
+              Service will retry automatically in {Math.ceil((CIRCUIT_RESET_TIME - (Date.now() - (lastFailureTime || 0))) / 1000)}s
+            </div>
+          )}
         </div>
       )}
     </Card>
