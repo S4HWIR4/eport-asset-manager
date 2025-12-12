@@ -14,7 +14,7 @@ export const warrantyRegistrationSchema = z.object({
   asset_name: z.string()
     .min(1, 'Asset name is required')
     .max(200, 'Asset name must be less than 200 characters')
-    .regex(/^[a-zA-Z0-9\s\-_.,()]+$/, 'Asset name contains invalid characters'),
+    .regex(/^[a-zA-Z0-9\s\-_.,()&@#$%^*+=|\\/<>?!~`"':;[\]{}]+$/, 'Asset name contains invalid characters'),
   
   user_email: z.string()
     .email('Please enter a valid email address')

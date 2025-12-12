@@ -18,6 +18,9 @@ export interface WarrantyStatusData {
 }
 
 export interface WarrantyState {
+  // Cache version for invalidation
+  cacheVersion?: string;
+  
   // Warranty registrations cache
   registrations: Record<string, WarrantyRegistration>;
   
@@ -60,13 +63,15 @@ export interface WarrantyState {
   revertOptimisticUpdate: (assetId: string) => void;
 }
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const REGISTRATION_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes (reduced from 5 minutes)
+const REGISTRATION_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (reduced from 10 minutes)
+const CACHE_VERSION = '1.1'; // Increment this to invalidate all cached data
 
 export const useWarrantyStore = create<WarrantyState>()(
   persist(
     (set, get) => ({
       // Initial state
+      cacheVersion: CACHE_VERSION,
       registrations: {},
       assetStatuses: {},
       loadingRegistrations: false,
@@ -334,11 +339,24 @@ export const useWarrantyStore = create<WarrantyState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist cache data, not loading states
+        cacheVersion: state.cacheVersion,
         registrations: state.registrations,
         assetStatuses: state.assetStatuses,
         assetStatusTimestamps: state.assetStatusTimestamps,
         lastRegistrationsFetch: state.lastRegistrationsFetch,
       }),
+      // Check cache version and clear if outdated
+      onRehydrateStorage: () => (state) => {
+        if (state && state.cacheVersion !== CACHE_VERSION) {
+          console.log('Warranty cache version mismatch, clearing cache');
+          // Clear the cache by resetting to initial state
+          state.registrations = {};
+          state.assetStatuses = {};
+          state.assetStatusTimestamps = {};
+          state.lastRegistrationsFetch = undefined;
+          state.cacheVersion = CACHE_VERSION;
+        }
+      },
     }
   )
 );

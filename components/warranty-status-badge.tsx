@@ -14,7 +14,7 @@ import {
   Calendar,
   Shield
 } from 'lucide-react';
-import { checkWarrantyStatus } from '@/app/actions/warranty';
+
 import { toast } from 'sonner';
 import { useAssetWarrantyStatus } from '@/lib/warranty-state';
 import { calculateWarrantyExpiration, getExpirationColorTheme } from '@/lib/warranty-expiration';
@@ -142,10 +142,16 @@ export function WarrantyStatusBadge({
     fetchStatusWithFeedback(true);
   };
 
-  // Initial load
+  // Initial load with staggered delay to prevent API overload
   useEffect(() => {
     if (!status) {
-      fetchStatusWithFeedback(true);
+      // Add a small random delay to stagger requests
+      const delay = Math.random() * 1000; // 0-1 second delay
+      const timer = setTimeout(() => {
+        fetchStatusWithFeedback(true);
+      }, delay);
+      
+      return () => clearTimeout(timer);
     }
   }, [assetId]);
 

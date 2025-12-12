@@ -40,6 +40,7 @@ import { AssetAuditHistory } from '../admin/assets/asset-audit-history';
 import { getDeletionRequestForAsset } from '@/app/actions/deletion-requests';
 import { WarrantyRegistrationButton } from '@/components/warranty-registration-button';
 import { WarrantyStatusBadge } from '@/components/warranty-status-badge';
+import { useWarrantyRegistrations } from '@/lib/warranty-state';
 import type { Asset, DeletionRequest } from '@/types/database';
 
 function ViewAssetDialog({
@@ -177,6 +178,7 @@ export function AssetsTableClient({
   const [assets, setAssets] = useState(initialAssets);
   const [deletionRequests, setDeletionRequests] = useState<Record<string, DeletionRequest>>({});
   const [loadingRequests, setLoadingRequests] = useState(true);
+  const { fetchRegistrations } = useWarrantyRegistrations();
 
   // Update assets when initialAssets changes (from server refresh)
   useEffect(() => {
@@ -200,6 +202,23 @@ export function AssetsTableClient({
   useEffect(() => {
     setAssets(initialAssets);
   }, [initialAssets]);
+
+  // Batch check warranty status for all assets on load
+  useEffect(() => {
+    const checkAllWarrantyStatuses = async () => {
+      // This will trigger the warranty status badges to check their status
+      // The individual badges will handle their own caching and loading states
+      try {
+        await fetchRegistrations(false); // Use cache if available
+      } catch (error) {
+        console.error('Failed to fetch warranty registrations:', error);
+      }
+    };
+
+    if (assets.length > 0) {
+      checkAllWarrantyStatuses();
+    }
+  }, [assets, fetchRegistrations]);
 
   // Fetch deletion requests for all assets
   useEffect(() => {
@@ -543,10 +562,12 @@ export function AssetsTableClient({
                         )}
                       </TableCell>
                       <TableCell>
-                        <WarrantyStatusBadge 
-                          assetId={asset.id} 
-                          className="max-w-[200px]"
-                        />
+                        <div className="flex items-center gap-1">
+                          <WarrantyStatusBadge 
+                            assetId={asset.id} 
+                            className="max-w-[200px]"
+                          />
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

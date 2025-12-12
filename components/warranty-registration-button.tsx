@@ -16,9 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Shield, CheckCircle, Loader2, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { Shield, CheckCircle, Loader2, AlertCircle, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { registerAssetWarranty, checkWarrantyStatus } from '@/app/actions/warranty';
+import { registerAssetWarranty } from '@/app/actions/warranty';
 import { useWarrantyStore, useAssetWarrantyStatus } from '@/lib/warranty-state';
 import { validateWarrantyRegistration, sanitizeWarrantyInput, WarrantyBusinessValidation } from '@/lib/warranty-validation';
 // import { WarrantyNotifications, WarrantyConfirmations } from '@/lib/warranty-notifications';
@@ -36,12 +36,7 @@ interface ValidationErrors {
   general?: string;
 }
 
-interface WarrantyStatus {
-  isRegistered: boolean;
-  warrantyId?: number;
-  registrationDate?: string;
-  status?: string;
-}
+
 
 export function WarrantyRegistrationButton({
   asset,
@@ -89,7 +84,22 @@ export function WarrantyRegistrationButton({
     const validation = validateWarrantyRegistration(formData);
     
     if (!validation.success) {
-      setValidationErrors(validation.errors);
+      // Map validation errors to UI field names
+      const mappedErrors: ValidationErrors = {};
+      Object.entries(validation.errors).forEach(([field, message]) => {
+        switch (field) {
+          case 'warranty_period_months':
+            mappedErrors.warrantyPeriod = message;
+            break;
+          case 'notes':
+            mappedErrors.notes = message;
+            break;
+          default:
+            mappedErrors.general = message;
+            break;
+        }
+      });
+      setValidationErrors(mappedErrors);
       return false;
     }
     
@@ -101,7 +111,19 @@ export function WarrantyRegistrationButton({
     });
     
     if (!businessValidation.success) {
-      setValidationErrors(businessValidation.errors);
+      // Map business validation errors to UI field names
+      const mappedErrors: ValidationErrors = {};
+      Object.entries(businessValidation.errors).forEach(([field, message]) => {
+        switch (field) {
+          case 'warranty_period':
+            mappedErrors.warrantyPeriod = message;
+            break;
+          default:
+            mappedErrors.general = message;
+            break;
+        }
+      });
+      setValidationErrors(mappedErrors);
       return false;
     }
     
