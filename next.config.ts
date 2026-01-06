@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Only use basePath and assetPrefix in production or when BASE_PATH is explicitly set
-  ...(process.env.NODE_ENV === 'production' && process.env.BASE_PATH && {
+  // Only use basePath and assetPrefix when BASE_PATH is explicitly set (for server deployment)
+  ...(process.env.BASE_PATH && {
     basePath: process.env.BASE_PATH,
     assetPrefix: process.env.BASE_PATH,
   }),
   
-  // Only use standalone output in production
-  ...(process.env.NODE_ENV === 'production' && {
+  // Only use standalone output for server deployment (not Vercel)
+  ...(process.env.DEPLOYMENT_TARGET === 'server' && {
     output: 'standalone',
     trailingSlash: true,
   }),
