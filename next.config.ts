@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Path-based deployment configuration
+  basePath: process.env.BASE_PATH || '',
+  assetPrefix: process.env.BASE_PATH || '',
+  trailingSlash: true,
+  output: 'standalone',
+  
   // Environment-specific configuration
   env: {
     NEXT_PUBLIC_WARRANTY_API_URL: process.env.NEXT_PUBLIC_WARRANTY_API_URL,
@@ -8,6 +14,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_TIMEOUT: process.env.NEXT_PUBLIC_API_TIMEOUT,
     NEXT_PUBLIC_API_RETRY_ATTEMPTS: process.env.NEXT_PUBLIC_API_RETRY_ATTEMPTS,
     NEXT_PUBLIC_DEBUG_API: process.env.NEXT_PUBLIC_DEBUG_API,
+    CUSTOM_BASE_PATH: process.env.BASE_PATH || '',
   },
   
   // Production optimizations
