@@ -16,7 +16,7 @@ export interface WarrantyConfig {
  */
 export function getWarrantyConfig(): WarrantyConfig {
   const config: WarrantyConfig = {
-    apiBaseUrl: process.env.NEXT_PUBLIC_WARRANTY_API_URL || 'https://server16.eport.ws',
+    apiBaseUrl: process.env.NEXT_PUBLIC_WARRANTY_API_URL || 'https://vm6.eport.ws/register',
     timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000'),
     retryAttempts: parseInt(process.env.NEXT_PUBLIC_API_RETRY_ATTEMPTS || '3'),
     debugMode: process.env.NEXT_PUBLIC_DEBUG_API === 'true',
@@ -69,7 +69,7 @@ export function getApiEndpoints() {
   return {
     register: `${baseUrl}/api/warranty/register`,
     check: (assetId: string) => `${baseUrl}/api/warranty/check/${assetId}`,
-    registrations: `${baseUrl}/api/warranty/registrations`,
+    registrations: `${baseUrl}/api/warranty/list`, // Updated endpoint name
     health: `${baseUrl}/health`,
   };
 }

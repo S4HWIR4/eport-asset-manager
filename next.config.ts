@@ -1,11 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Path-based deployment configuration
-  basePath: process.env.BASE_PATH || '',
-  assetPrefix: process.env.BASE_PATH || '',
-  trailingSlash: true,
-  output: 'standalone',
+  // Only use basePath and assetPrefix in production or when BASE_PATH is explicitly set
+  ...(process.env.NODE_ENV === 'production' && process.env.BASE_PATH && {
+    basePath: process.env.BASE_PATH,
+    assetPrefix: process.env.BASE_PATH,
+  }),
+  
+  // Only use standalone output in production
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'standalone',
+    trailingSlash: true,
+  }),
   
   // Environment-specific configuration
   env: {
